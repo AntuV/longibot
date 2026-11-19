@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "sourceMap": true
+  },
+  "include": [
+    "apps/api/src/**/*.ts",
+    "apps/worker/src/**/*.ts",
+    "packages/**/*.ts",
+    "scripts/migrate.ts",
+    "scripts/import-legacy.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules",
+    "dist"
+  ]
+}

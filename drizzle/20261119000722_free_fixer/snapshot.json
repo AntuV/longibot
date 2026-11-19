@@ -1,0 +1,115 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "a2788dfa-a90c-4838-8c1a-df8103196ad4",
+  "prevIds": [
+    "8268554d-7520-4673-a686-732f9fc29796"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "event_deliveries",
+        "attempts"
+      ],
+      "writes": [
+        "s|col|public.event_deliveries.attempts",
+        "n|col|public.event_deliveries.attempts",
+        "e|col|public.event_deliveries.attempts"
+      ],
+      "reads": [
+        "n|tbl|public.event_deliveries",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "event_deliveries",
+        "last_error"
+      ],
+      "writes": [
+        "s|col|public.event_deliveries.last_error",
+        "n|col|public.event_deliveries.last_error",
+        "e|col|public.event_deliveries.last_error"
+      ],
+      "reads": [
+        "n|tbl|public.event_deliveries",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "event_deliveries",
+        "next_attempt_at"
+      ],
+      "writes": [
+        "s|col|public.event_deliveries.next_attempt_at",
+        "n|col|public.event_deliveries.next_attempt_at",
+        "e|col|public.event_deliveries.next_attempt_at"
+      ],
+      "reads": [
+        "n|tbl|public.event_deliveries",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "event_deliveries",
+        "name": "attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "event_deliveries",
+        "name": "last_error",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "event_deliveries",
+        "name": "next_attempt_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

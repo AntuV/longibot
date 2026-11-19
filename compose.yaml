@@ -1,0 +1,74 @@
+name: longibot
+x-app: &app
+  image: ${APP_IMAGE:-longibot:local}
+  build: .
+  init: true
+  restart: unless-stopped
+  stop_grace_period: 30s
+  environment: &environment
+    NODE_ENV: production
+    PORT: 3000
+    APP_BASE_URL: ${APP_BASE_URL:?Set APP_BASE_URL to an HTTPS URL}
+    DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL using the private postgres host}
+    TWITCH_CHANNEL: ${TWITCH_CHANNEL:-longii_}
+    OWNER_TWITCH_USER_ID: ${OWNER_TWITCH_USER_ID:-}
+    LOG_LEVEL: ${LOG_LEVEL:-info}
+    TWITCH_REDIRECT_URI: ${TWITCH_REDIRECT_URI:-}
+    TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
+    TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:-}
+    TWITCH_EVENTSUB_SECRET: ${TWITCH_EVENTSUB_SECRET:-}
+    TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-}
+    RIOT_API_KEY: ${RIOT_API_KEY:-}
+  networks: [backend]
+
+services:
+  postgres:
+    image: postgres:17.7-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-longibot}
+      POSTGRES_USER: ${POSTGRES_USER:-longibot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+  migrate:
+    <<: *app
+    restart: 'no'
+    command: [node, dist/scripts/migrate.js]
+    healthcheck: {disable: true}
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    <<: *app
+    expose: ['3000']
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    networks: [backend, default]
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, api]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+  worker:
+    <<: *app
+    command: [node, dist/apps/worker/src/main.js]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, node, scripts/healthcheck.mjs, worker]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+networks:
+  backend: {}
+volumes:
+  postgres-data:
+    name: ${POSTGRES_VOLUME_NAME:-longibot-postgres}

@@ -1,0 +1,87 @@
+{
+  "type": "base",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "faf9c9c5-1328-480f-809a-3b64fcf77f85",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "runtime_metadata"
+      ],
+      "writes": [
+        "s|tbl|public.runtime_metadata",
+        "n|tbl|public.runtime_metadata",
+        "e|tbl|public.runtime_metadata",
+        "n|rel|public.runtime_metadata",
+        "n|type|public.runtime_metadata",
+        "n|rel|public.runtime_metadata_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
+  "ddl": [
+    {
+      "schema": "public",
+      "name": "runtime_metadata",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "table": "runtime_metadata",
+      "name": "key",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "runtime_metadata",
+      "name": "value",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "runtime_metadata",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "runtime_metadata",
+      "name": "runtime_metadata_pkey",
+      "columns": [
+        "key"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    }
+  ]
+}

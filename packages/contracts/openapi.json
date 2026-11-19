@@ -1,0 +1,575 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/admin/settings": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Operación completada"
+          },
+          "401": {
+            "description": "Sin sesión"
+          },
+          "403": {
+            "description": "Sin permisos o CSRF inválido"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "trivia": {
+                    "default": {
+                      "enabled": false,
+                      "intervalMinutes": 60,
+                      "answerSeconds": 300
+                    },
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "intervalMinutes": {
+                        "default": 60,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1440
+                      },
+                      "answerSeconds": {
+                        "default": 300,
+                        "type": "integer",
+                        "minimum": 10,
+                        "maximum": 600
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "intervalMinutes",
+                      "answerSeconds"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "stories": {
+                    "default": {
+                      "enabled": false,
+                      "globalSeconds": 300,
+                      "actorSeconds": 28800,
+                      "guestSeconds": 3600
+                    },
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "globalSeconds": {
+                        "default": 300,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 86400
+                      },
+                      "actorSeconds": {
+                        "default": 28800,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 86400
+                      },
+                      "guestSeconds": {
+                        "default": 3600,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 86400
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "globalSeconds",
+                      "actorSeconds",
+                      "guestSeconds"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "predictions": {
+                    "default": {
+                      "enabled": true,
+                      "autoResolve": true,
+                      "title": "¿Gana esta partida?",
+                      "yes": "Sí",
+                      "no": "No",
+                      "maxAgeSeconds": 300
+                    },
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "default": true,
+                        "type": "boolean"
+                      },
+                      "autoResolve": {
+                        "default": true,
+                        "type": "boolean"
+                      },
+                      "title": {
+                        "default": "¿Gana esta partida?",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 45
+                      },
+                      "yes": {
+                        "default": "Sí",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25
+                      },
+                      "no": {
+                        "default": "No",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25
+                      },
+                      "maxAgeSeconds": {
+                        "default": 300,
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 300
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "autoResolve",
+                      "title",
+                      "yes",
+                      "no",
+                      "maxAgeSeconds"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tracking": {
+                    "default": {
+                      "enabled": true,
+                      "onlyLive": false,
+                      "pollSeconds": 45,
+                      "queues": []
+                    },
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "default": true,
+                        "type": "boolean"
+                      },
+                      "onlyLive": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "pollSeconds": {
+                        "default": 45,
+                        "type": "integer",
+                        "minimum": 30,
+                        "maximum": 60
+                      },
+                      "queues": {
+                        "default": [],
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "onlyLive",
+                      "pollSeconds",
+                      "queues"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "actions": {
+                    "default": [],
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "event": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "rewardId": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "text": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 400
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "event",
+                        "enabled",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "trivia",
+                  "stories",
+                  "predictions",
+                  "tracking",
+                  "actions"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/admin/account": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Operación completada"
+          },
+          "401": {
+            "description": "Sin sesión"
+          },
+          "403": {
+            "description": "Sin permisos o CSRF inválido"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "gameName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "tagLine": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16
+                  },
+                  "platform": {
+                    "type": "string",
+                    "enum": [
+                      "la1",
+                      "la2",
+                      "na1",
+                      "br1",
+                      "euw1",
+                      "eun1",
+                      "kr",
+                      "jp1",
+                      "oc1",
+                      "tr1",
+                      "ru",
+                      "ph2",
+                      "sg2",
+                      "th2",
+                      "tw2",
+                      "vn2"
+                    ]
+                  },
+                  "region": {
+                    "type": "string",
+                    "enum": [
+                      "americas",
+                      "europe",
+                      "asia",
+                      "sea"
+                    ]
+                  }
+                },
+                "required": [
+                  "gameName",
+                  "tagLine",
+                  "platform",
+                  "region"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/admin/reminders": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Operación completada"
+          },
+          "401": {
+            "description": "Sin sesión"
+          },
+          "403": {
+            "description": "Sin permisos o CSRF inválido"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 350
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/admin/questions/{id}": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Operación completada"
+          },
+          "401": {
+            "description": "Sin sesión"
+          },
+          "403": {
+            "description": "Sin permisos o CSRF inválido"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 400
+                  },
+                  "answers": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  }
+                },
+                "required": [
+                  "text",
+                  "answers"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    },
+    "/api/admin/predictions/{id}": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Operación completada"
+          },
+          "401": {
+            "description": "Sin sesión"
+          },
+          "403": {
+            "description": "Sin permisos o CSRF inválido"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "LOCKED",
+                      "RESOLVED",
+                      "CANCELED"
+                    ]
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "LongiBot API",
+    "description": "",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "lb_session"
+      }
+    }
+  }
+}
