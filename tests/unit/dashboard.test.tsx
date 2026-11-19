@@ -60,7 +60,7 @@ describe('administration screens', () => {
     mount(); expect(await screen.findByRole('heading', { name: 'Hola, Streamer' })).toBeTruthy()
     expect(screen.getAllByText('En vivo').length).toBeGreaterThan(0); expect(screen.getByText('En juego')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Nada necesita atención' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Conectar cuenta del bot' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Conectar cuenta del canal' })).toBeTruthy(); expect(screen.queryByRole('link', { name: 'Conectar cuenta del bot' })).toBeNull()
     cleanup(); mount('/features')
     const form = await screen.findByRole('form', { name: 'Cuenta de League of Legends' })
     fireEvent.change(within(form).getByLabelText('Riot ID (nombre) *'), { target: { value: 'Name' } })

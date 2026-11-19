@@ -12,7 +12,7 @@ import { createApp } from '../../apps/api/src/app.js'
 import * as eventsub from '../../packages/infrastructure/src/adapters/eventsub.js'
 import { Riot } from '../../packages/infrastructure/src/adapters/riot.js'
 import { Runtime } from '../../packages/infrastructure/src/runtime.js'
-import { ProviderError } from '../../packages/infrastructure/src/adapters/http.js'
+import { Http, ProviderError } from '../../packages/infrastructure/src/adapters/http.js'
 import { Worker } from '../../apps/worker/src/worker.js'
 import { features } from '../../packages/features/src/registry.js'
 import { createHmac } from 'node:crypto'
@@ -25,10 +25,10 @@ const store = new Store(pool, channel)
 const key = Buffer.alloc(32, 1).toString('base64')
 const config = { clientId: 'client', clientSecret: 'secret', encryptionKey: key, eventSecret: 'long-event-secret', baseUrl: 'https://bot.example.com', redirectUri: 'https://bot.example.com/api/auth/twitch/callback' }
 const token = { accessToken: 'user', refreshToken: 'refresh', expiresIn: 3600, obtainmentTimestamp: Date.now(), scope: [] }
-const identity = { client_id: 'client', user_id: 'b', login: 'streamer', scopes: [...scopes.dashboard, ...scopes.broadcaster, ...scopes.bot], expires_in: 3600 }
+const identity = { client_id: 'client', user_id: 'b', login: 'streamer', scopes: [...scopes.dashboard, ...scopes.broadcaster, 'user:write:chat'], expires_in: 3600 }
 const twitch = new Twitch(store, config)
 vi.spyOn(twitch, 'user').mockResolvedValue({ id: 'b', login: channel, display_name: 'Streamer' })
-vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'user', userId: 'b' })
+vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'user', userId: 'b', clientId: 'client' })
 const validate = vi.spyOn(twitch, 'validate').mockImplementation(async () => ({ ...identity }))
 const authorized = vi.spyOn(twitch, 'authorized').mockResolvedValue(true)
 vi.spyOn(twitch, 'exchange').mockResolvedValue(token)
@@ -132,7 +132,7 @@ describe('PostgreSQL durable state', () => {
     const expiring = { ...token, obtainmentTimestamp: 0, expiresIn: 0 }
     await real.save('refresh-test', 'u', expiring)
     const results = await Promise.all([real.access('refresh-test', 'u'), real.access('refresh-test', 'u')])
-    expect(results).toEqual([{ userId: 'u', token: 'renewed' }, { userId: 'u', token: 'renewed' }])
+    expect(results).toEqual([{ userId: 'u', token: 'renewed', clientId: 'client' }, { userId: 'u', token: 'renewed', clientId: 'client' }])
     const row = await pool.query<{ encrypted: string }>('SELECT encrypted FROM oauth_connections WHERE channel=$1 AND purpose=$2', [channel, 'refresh-test'])
     expect(row.rows[0]?.encrypted).not.toContain('rotated'); expect(decrypt(row.rows[0]!.encrypted, key)).toMatchObject({ refreshToken: 'rotated' })
     await real.save('no-refresh', 'u', { ...expiring, refreshToken: null })
@@ -140,6 +140,51 @@ describe('PostgreSQL durable state', () => {
     await expect(real.access('missing')).rejects.toThrow('Falta conectar')
     await pool.query('UPDATE oauth_connections SET encrypted=$3 WHERE channel=$1 AND purpose=$2', [channel, 'no-refresh', encrypt({ bad: true }, key)])
     await expect(real.access('no-refresh')).rejects.toThrow()
+  })
+})
+describe('bot credentials from environment', () => {
+  const bot = { clientId: 'ttg', accessToken: 'env-access', refreshToken: 'env-refresh' }
+  const botIdentity = { client_id: 'ttg', user_id: 'bot-id', login: 'longibot', scopes: ['user:write:chat'], expires_in: 3600 }
+  const rows = async () => (await pool.query<{ user_id: string, encrypted: string }>("SELECT user_id,encrypted FROM oauth_connections WHERE channel=$1 AND purpose='bot'", [channel])).rows
+  it('seeds from env, persists refreshed tokens and replaces them when env changes', async () => {
+    await pool.query("DELETE FROM oauth_connections WHERE channel=$1 AND purpose='bot'", [channel])
+    await expect(new Twitch(store, config).access('bot')).rejects.toThrow('BOT_TWITCH')
+    const f = vi.fn<typeof fetch>()
+    const real = new Twitch(store, { ...config, bot }, new Http(f))
+    const check = vi.spyOn(real, 'validate').mockResolvedValueOnce({ ...botIdentity })
+    expect(await real.access('bot')).toEqual({ token: 'env-access', userId: 'bot-id', clientId: 'ttg' })
+    expect(check).toHaveBeenCalledWith('env-access', 'ttg')
+    expect((await rows())[0]?.encrypted).not.toContain('env-access')
+    expect(await real.access('bot')).toEqual({ token: 'env-access', userId: 'bot-id', clientId: 'ttg' })
+    expect(check).toHaveBeenCalledTimes(1)
+    // Expired stored token refreshes through twitchtokengenerator.com.
+    const row = (await rows())[0]!
+    await pool.query("UPDATE oauth_connections SET encrypted=$2 WHERE channel=$1 AND purpose='bot'", [channel, encrypt({ ...(decrypt(row.encrypted, key) as object), expiresIn: 0, obtainmentTimestamp: 0 }, key)])
+    f.mockResolvedValueOnce(Response.json({ success: true, access_token: 'ttg-access', refresh_token: 'ttg-refresh', client_id: 'ttg', expires_in: 14000, scopes: ['user:write:chat'] }))
+    check.mockResolvedValueOnce({ ...botIdentity })
+    expect((await real.access('bot')).token).toBe('ttg-access')
+    expect(String(f.mock.calls[0]?.[0])).toContain('twitchtokengenerator.com/api/v2/tokens/refresh')
+    expect(JSON.parse(String(f.mock.calls[0]?.[1]?.body))).toEqual({ refresh_token: 'env-refresh' })
+    expect(decrypt((await rows())[0]!.encrypted, key)).toMatchObject({ refreshToken: 'ttg-refresh' })
+    // New env values (another account) replace the stored identity; an invalid env access token is refreshed first.
+    const other = new Twitch(store, { ...config, bot: { clientId: 'client', accessToken: 'new-access', refreshToken: 'new-refresh' } })
+    vi.spyOn(other, 'validate').mockRejectedValueOnce(new Error('401')).mockResolvedValueOnce({ ...botIdentity, client_id: 'client', user_id: 'bot-2' })
+    expect(await other.access('bot')).toEqual({ token: 'renewed', userId: 'bot-2', clientId: 'client' })
+    expect((await rows()).map(r => r.user_id)).toEqual(['bot-2'])
+  })
+  it('rejects tokens without chat scope, without refresh token or renewed for another client', async () => {
+    await pool.query("DELETE FROM oauth_connections WHERE channel=$1 AND purpose='bot'", [channel])
+    const scopeless = new Twitch(store, { ...config, bot })
+    vi.spyOn(scopeless, 'validate').mockResolvedValueOnce({ ...botIdentity, scopes: [] })
+    await expect(scopeless.access('bot')).rejects.toThrow('user:write:chat')
+    const noRefresh = new Twitch(store, { ...config, bot: { ...bot, refreshToken: '' } })
+    vi.spyOn(noRefresh, 'validate').mockRejectedValueOnce(new Error('401'))
+    await expect(noRefresh.access('bot')).rejects.toThrow('refresh token')
+    const f = vi.fn<typeof fetch>().mockResolvedValueOnce(Response.json({ success: true, access_token: 'a', refresh_token: 'r', client_id: 'other' }))
+    const foreign = new Twitch(store, { ...config, bot }, new Http(f))
+    vi.spyOn(foreign, 'validate').mockRejectedValueOnce(new Error('401'))
+    await expect(foreign.access('bot')).rejects.toThrow('otro client ID')
+    expect(await rows()).toEqual([])
   })
 })
 describe('OAuth, roles and session security', () => {
@@ -167,14 +212,13 @@ describe('OAuth, roles and session security', () => {
   })
   it('limits new states, separates bot/broadcaster consent and requires the streamer to initiate', async () => {
     const current = cookie.split('=')[1]!
-    await expect(auth.start('bot')).rejects.toThrow()
+    await expect(auth.start('broadcaster')).rejects.toThrow()
     // A valid mod cannot connect the broadcaster or bot identities.
     await pool.query('INSERT INTO sessions(id,channel,user_id,name,csrf,expires_at) VALUES($1,$2,$3,$4,$5,now()+interval \'1 hour\')', [hash('mod-session'), channel, 'mod', 'Mod', 'csrf'])
     await expect(auth.start('broadcaster', 'mod-session')).rejects.toThrow('streamer')
     const a = await auth.start('broadcaster', current); validate.mockResolvedValueOnce({ ...identity, user_id: 'mod' })
     await expect(auth.callback(a.state, a.state, 'code')).rejects.toThrow('streamer')
     const b = await auth.start('broadcaster', current); expect(await auth.callback(b.state, b.state, 'code')).toBeUndefined()
-    const c = await auth.start('bot', current); expect(await auth.callback(c.state, c.state, 'code')).toBeUndefined()
     await pool.query('INSERT INTO oauth_states(id,channel,purpose,expires_at) SELECT md5(i::text),$1,\'dashboard\',now()+interval \'1 minute\' FROM generate_series(1,100) i', [channel])
     await expect(auth.start('dashboard')).rejects.toThrow('Demasiados')
     await pool.query('DELETE FROM oauth_states WHERE channel=$1', [channel])

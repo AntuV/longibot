@@ -5,8 +5,7 @@ import type { Twitch } from './adapters/twitch.js'
 
 export const scopes = {
   dashboard: ['user:read:moderated_channels'],
-  broadcaster: ['channel:manage:predictions', 'channel:read:redemptions', 'bits:read', 'channel:read:subscriptions', 'moderator:read:followers', 'channel:bot'],
-  bot: ['user:read:chat', 'user:write:chat', 'user:bot']
+  broadcaster: ['channel:manage:predictions', 'channel:read:redemptions', 'bits:read', 'channel:read:subscriptions', 'moderator:read:followers', 'channel:bot', 'user:read:chat']
 } as const
 export type Purpose = keyof typeof scopes
 export interface Session { userId: string, name: string, csrf: string, admin: true, streamer: boolean }
@@ -41,7 +40,6 @@ export class Auth {
     if (!broadcasterId) throw new DomainError('Canal no conectado', 503)
     if (purpose === 'broadcaster' && identity.user_id !== broadcasterId) throw new DomainError('Autorizar con la cuenta del streamer', 403)
     if (purpose === 'dashboard' && !await this.twitch.authorized(identity.user_id, token.accessToken, broadcasterId)) throw new DomainError('Acceso reservado a streamer y moderadores actuales', 403)
-    if (purpose === 'bot') await this.store.pool.query('DELETE FROM oauth_connections WHERE channel=$1 AND purpose=$2 AND user_id<>$3', [this.store.channel, purpose, identity.user_id])
     await this.twitch.save(purpose, identity.user_id, token)
     if (purpose !== 'dashboard') return undefined
     const id = opaque(); const csrf = opaque()

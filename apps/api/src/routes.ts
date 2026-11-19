@@ -51,7 +51,7 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
     reply.code(status).send({ message: e instanceof DomainError ? e.message : status === 400 ? 'Solicitud inválida' : 'Servicio no disponible' })
   })
   server.get('/api/auth/twitch', async (r, reply) => {
-    const purpose = parse(z.object({ purpose: z.enum(['dashboard', 'broadcaster', 'bot']).default('dashboard') }), r.query).purpose as Purpose
+    const purpose = parse(z.object({ purpose: z.enum(['dashboard', 'broadcaster']).default('dashboard') }), r.query).purpose as Purpose
     const { auth } = services()
     const result = await auth.start(purpose, r.cookies.lb_session)
     return reply.setCookie('lb_oauth', result.state, { ...cookieOptions, maxAge: 600 }).redirect(result.url)
