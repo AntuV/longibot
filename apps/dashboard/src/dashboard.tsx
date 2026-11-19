@@ -364,43 +364,47 @@ function Summary () {
         ]}
         transform={(d) => ({ ...d, platform: d.platform, region: d.region })}
       >
-        <label htmlFor='platform'>Plataforma</label>
-        <select
-          id='platform'
-          name='platform'
-          defaultValue={s.account?.platform ?? 'la2'}
-        >
-          {[
-            'la1',
-            'la2',
-            'na1',
-            'br1',
-            'euw1',
-            'eun1',
-            'kr',
-            'jp1',
-            'oc1',
-            'tr1',
-            'ru',
-            'ph2',
-            'sg2',
-            'th2',
-            'tw2',
-            'vn2'
-          ].map((p) => (
-            <option key={p}>{p}</option>
-          ))}
-        </select>
-        <label htmlFor='region'>Routing regional</label>
-        <select
-          id='region'
-          name='region'
-          defaultValue={s.account?.region ?? 'americas'}
-        >
-          {['americas', 'europe', 'asia', 'sea'].map((p) => (
-            <option key={p}>{p}</option>
-          ))}
-        </select>
+        <div className='field'>
+          <label htmlFor='platform'>Plataforma</label>
+          <select
+            id='platform'
+            name='platform'
+            defaultValue={s.account?.platform ?? 'la2'}
+          >
+            {[
+              'la1',
+              'la2',
+              'na1',
+              'br1',
+              'euw1',
+              'eun1',
+              'kr',
+              'jp1',
+              'oc1',
+              'tr1',
+              'ru',
+              'ph2',
+              'sg2',
+              'th2',
+              'tw2',
+              'vn2'
+            ].map((p) => (
+              <option key={p}>{p}</option>
+            ))}
+          </select>
+        </div>
+        <div className='field'>
+          <label htmlFor='region'>Routing regional</label>
+          <select
+            id='region'
+            name='region'
+            defaultValue={s.account?.region ?? 'americas'}
+          >
+            {['americas', 'europe', 'asia', 'sea'].map((p) => (
+              <option key={p}>{p}</option>
+            ))}
+          </select>
+        </div>
       </Form>
       <section className='card'>
         <h2>Últimas partidas</h2>
@@ -604,22 +608,24 @@ function Events () {
           ]
         })}
       >
-        <label htmlFor='event-type'>Evento</label>
-        <select id='event-type' name='event'>
-          {[
-            'twitch.redemption.created.v1',
-            'twitch.redemption.updated.v1',
-            'twitch.automatic_reward.redeemed.v1',
-            'twitch.bits.used.v1',
-            'twitch.message.highlighted.v1',
-            'twitch.subscription.started.v1',
-            'twitch.subscription.message.v1',
-            'twitch.subscriptions.gifted.v1',
-            'twitch.followed.v1'
-          ].map((e) => (
-            <option key={e}>{e}</option>
-          ))}
-        </select>
+        <div className='field'>
+          <label htmlFor='event-type'>Evento</label>
+          <select id='event-type' name='event'>
+            {[
+              'twitch.redemption.created.v1',
+              'twitch.redemption.updated.v1',
+              'twitch.automatic_reward.redeemed.v1',
+              'twitch.bits.used.v1',
+              'twitch.message.highlighted.v1',
+              'twitch.subscription.started.v1',
+              'twitch.subscription.message.v1',
+              'twitch.subscriptions.gifted.v1',
+              'twitch.followed.v1'
+            ].map((e) => (
+              <option key={e}>{e}</option>
+            ))}
+          </select>
+        </div>
       </Form>
       <section className='card'>
         <h2>Reglas configuradas</h2>
@@ -768,15 +774,17 @@ function Features () {
             min={30}
             max={60}
           />
-          <label htmlFor='queues'>
-            Colas habilitadas (vacío: todas las detectables)
-          </label>
-          <input
-            id='queues'
-            name='queues'
-            defaultValue={settings.tracking.queues.join(',')}
-            pattern='[0-9, ]*'
-          />
+          <div className='field'>
+            <label htmlFor='queues'>
+              Colas habilitadas (vacío: todas las detectables)
+            </label>
+            <input
+              id='queues'
+              name='queues'
+              defaultValue={settings.tracking.queues.join(',')}
+              pattern='[0-9, ]*'
+            />
+          </div>
           <Numeric
             name='interval'
             label='Intervalo de trivia (minutos)'
