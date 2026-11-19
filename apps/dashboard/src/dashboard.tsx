@@ -11,7 +11,7 @@ export const pages = [
   { path: '/recordatorios', label: 'Recordatorios', component: Reminders },
   { path: '/predictions', label: 'Predictions', component: Predictions },
   { path: '/eventos', label: 'Eventos y acciones', component: Events },
-  { path: '/features', label: 'Features', component: Features },
+  { path: '/features', label: 'Configuración', component: Features },
   { path: '/juegos', label: 'Trivia e historias', component: Games },
   { path: '/operacion', label: 'Operación', component: Operation }
 ]
@@ -71,9 +71,7 @@ export function Dashboard () {
         Ir al contenido
       </a>
       <aside>
-        <a className='brand' href='/'>
-          L<span>LongiBot</span>
-        </a>
+        <Brand />
         <p className='eyebrow'>#{user.data.channel}</p>
         <nav aria-label='Administración'>
           {pages.map((p) => (
@@ -258,9 +256,11 @@ function Form ({
         </div>
       ))}
       {children}
-      <button className='primary' type='submit' disabled={mutation.isPending}>
-        {mutation.isPending ? 'Guardando…' : 'Guardar'}
-      </button>
+      <div className='buttons'>
+        <button className='primary' type='submit' disabled={mutation.isPending}>
+          {mutation.isPending ? 'Guardando…' : 'Guardar'}
+        </button>
+      </div>
       <p role={mutation.isError ? 'alert' : 'status'}>
         {mutation.isError
           ? mutation.error.message
@@ -269,6 +269,27 @@ function Form ({
             : ''}
       </p>
     </form>
+  )
+}
+function Brand () {
+  const [failed, setFailed] = useState(false)
+  return (
+    <a className='brand' href='/'>
+      {failed
+        ? (
+            'L'
+          )
+        : (
+            <img
+              src='/api/branding/avatar'
+              alt=''
+              width={40}
+              height={40}
+              onError={() => setFailed(true)}
+            />
+          )}
+      <span>LongiBot</span>
+    </a>
   )
 }
 function Heading ({
@@ -349,63 +370,6 @@ function Summary () {
               <p>El streamer debe conectar ambas cuentas.</p>
             )}
       </section>
-      <Form
-        title='Cuenta de League of Legends'
-        path='admin/account'
-        method='PUT'
-        csrf={user.csrf}
-        fields={[
-          {
-            name: 'gameName',
-            label: 'Riot ID (nombre)',
-            value: s.account?.gameName
-          },
-          { name: 'tagLine', label: 'Tag', value: s.account?.tagLine }
-        ]}
-        transform={(d) => ({ ...d, platform: d.platform, region: d.region })}
-      >
-        <div className='field'>
-          <label htmlFor='platform'>Plataforma</label>
-          <select
-            id='platform'
-            name='platform'
-            defaultValue={s.account?.platform ?? 'la2'}
-          >
-            {[
-              'la1',
-              'la2',
-              'na1',
-              'br1',
-              'euw1',
-              'eun1',
-              'kr',
-              'jp1',
-              'oc1',
-              'tr1',
-              'ru',
-              'ph2',
-              'sg2',
-              'th2',
-              'tw2',
-              'vn2'
-            ].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-        <div className='field'>
-          <label htmlFor='region'>Routing regional</label>
-          <select
-            id='region'
-            name='region'
-            defaultValue={s.account?.region ?? 'americas'}
-          >
-            {['americas', 'europe', 'asia', 'sea'].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-      </Form>
       <section className='card'>
         <h2>Últimas partidas</h2>
         {Object.values(s.games)
@@ -671,9 +635,66 @@ function Features () {
   return (
     <>
       <Heading
-        title='Features'
+        title='Configuración'
         description='La configuración se valida y audita en el servidor. Deshabilitar un juego cancela sus rondas y mensajes pendientes.'
       />
+      <Form
+        title='Cuenta de League of Legends'
+        path='admin/account'
+        method='PUT'
+        csrf={user.csrf}
+        fields={[
+          {
+            name: 'gameName',
+            label: 'Riot ID (nombre)',
+            value: s.account?.gameName
+          },
+          { name: 'tagLine', label: 'Tag', value: s.account?.tagLine }
+        ]}
+        transform={(d) => ({ ...d, platform: d.platform, region: d.region })}
+      >
+        <div className='field'>
+          <label htmlFor='platform'>Plataforma</label>
+          <select
+            id='platform'
+            name='platform'
+            defaultValue={s.account?.platform ?? 'la2'}
+          >
+            {[
+              'la1',
+              'la2',
+              'na1',
+              'br1',
+              'euw1',
+              'eun1',
+              'kr',
+              'jp1',
+              'oc1',
+              'tr1',
+              'ru',
+              'ph2',
+              'sg2',
+              'th2',
+              'tw2',
+              'vn2'
+            ].map((p) => (
+              <option key={p}>{p}</option>
+            ))}
+          </select>
+        </div>
+        <div className='field'>
+          <label htmlFor='region'>Routing regional</label>
+          <select
+            id='region'
+            name='region'
+            defaultValue={s.account?.region ?? 'americas'}
+          >
+            {['americas', 'europe', 'asia', 'sea'].map((p) => (
+              <option key={p}>{p}</option>
+            ))}
+          </select>
+        </div>
+      </Form>
       <Form
         title='Configuración de módulos'
         path='admin/settings'
@@ -720,11 +741,6 @@ function Features () {
             ['trivia', 'Trivia', settings.trivia.enabled],
             ['stories', 'Historias', settings.stories.enabled],
             ['predictions', 'Predictions', settings.predictions.enabled],
-            [
-              'auto',
-              'Resolver automáticamente; cancelar remakes',
-              settings.predictions.autoResolve
-            ],
             ['tracking', 'Seguimiento Riot', settings.tracking.enabled],
             ['live', 'Seguir solo durante directo', settings.tracking.onlyLive]
           ].map(([name, label, enabled]) => (
@@ -741,6 +757,17 @@ function Features () {
         </fieldset>
         <fieldset>
           <legend>Predictions</legend>
+          <div className='check field'>
+            <input
+              id='auto'
+              name='auto'
+              type='checkbox'
+              defaultChecked={settings.predictions.autoResolve}
+            />
+            <label htmlFor='auto'>
+              Resolver automáticamente; cancelar remakes
+            </label>
+          </div>
           {[
             ['title', 'Pregunta', settings.predictions.title, 45],
             ['yes', 'Opción de victoria', settings.predictions.yes, 25],

@@ -13,6 +13,7 @@ button:disabled { opacity: .6; cursor: wait; }
 .shell { display: grid; grid-template-columns: 16rem minmax(0, 1fr); min-height: 100dvh; }
 aside { padding: 2rem 1.25rem; border-inline-end: 1px solid #303743; background: #141920; }
 .brand { display: flex; align-items: center; gap: .75rem; font-size: 1.5rem; font-weight: 800; color: #b6c4ff; }
+.brand img { width: 2.5rem; height: 2.5rem; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .brand span { font-size: 1.2rem; color: #f8f9fc; }
 .eyebrow { color: #a0afd0; text-transform: uppercase; font-size: .75rem; font-weight: 650; letter-spacing: .1em; }
 nav { display: grid; gap: .4rem; margin-block: 2.5rem; }

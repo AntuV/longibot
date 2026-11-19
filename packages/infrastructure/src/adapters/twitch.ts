@@ -9,7 +9,7 @@ import { Http } from './http.js'
 const tokenSchema = z.object({ accessToken: z.string(), refreshToken: z.string().nullable(), expiresIn: z.number().nullable(), obtainmentTimestamp: z.number(), scope: z.array(z.string()) })
 export type Token = z.infer<typeof tokenSchema>
 const identitySchema = z.object({ client_id: z.string(), user_id: z.string(), login: z.string(), scopes: z.array(z.string()), expires_in: z.number() })
-const userSchema = z.object({ id: z.string(), login: z.string(), display_name: z.string() })
+const userSchema = z.object({ id: z.string(), login: z.string(), display_name: z.string(), profile_image_url: z.string().optional() })
 const predictionSchema = z.object({ id: z.string(), title: z.string(), status: z.string(), created_at: z.string(), outcomes: z.array(z.object({ id: z.string(), title: z.string() })) })
 export interface IntegrationConfig { clientId: string, clientSecret: string, encryptionKey: string, eventSecret: string, baseUrl: string, redirectUri: string }
 export function integrationConfig (env = process.env): IntegrationConfig {

@@ -58,7 +58,8 @@ describe('administration screens', () => {
     mount(); expect(await screen.findByRole('heading', { name: 'Hola, Streamer' })).toBeTruthy()
     expect(screen.getByText('En directo')).toBeTruthy(); expect(screen.getByText('En juego')).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Conectar bot' })).toBeTruthy()
-    const form = screen.getByRole('form', { name: 'Cuenta de League of Legends' })
+    cleanup(); mount('/features')
+    const form = await screen.findByRole('form', { name: 'Cuenta de League of Legends' })
     fireEvent.change(within(form).getByLabelText('Riot ID (nombre) *'), { target: { value: 'Name' } })
     fireEvent.change(within(form).getByLabelText('Tag *'), { target: { value: 'TAG' } })
     await userEvent.click(within(form).getByRole('button', { name: 'Guardar' }))
@@ -69,7 +70,8 @@ describe('administration screens', () => {
     streamer = false; state.tracking = 'idle'; state.account = { gameName: 'Saved', tagLine: 'TAG', platform: 'euw1', region: 'europe', puuid: 'p' }
     mount(); expect(await screen.findByText('Sin partida')).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Conectar broadcaster' })).toBeNull()
-    expect(screen.getByLabelText('Riot ID (nombre) *')).toHaveProperty('value', 'Saved')
+    cleanup(); mount('/features')
+    expect(await screen.findByLabelText('Riot ID (nombre) *')).toHaveProperty('value', 'Saved')
   })
   it('adds and cancels reminders, preserving remote assignment/status details', async () => {
     state.reminders.r = { id: 'r', text: 'Existing', author: 'Mod', status: 'queued', createdAt: 1, gameId: 'LA2_1', attempts: 0 }
@@ -110,7 +112,7 @@ describe('administration screens', () => {
     mount('/features'); await screen.findByLabelText('Trivia')
     await userEvent.click(screen.getByLabelText('Trivia')); await userEvent.click(screen.getByLabelText('Historias'))
     fireEvent.change(screen.getByLabelText('Colas habilitadas (vacío: todas las detectables)'), { target: { value: '420,450' } })
-    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await userEvent.click(within(screen.getByRole('form', { name: 'Configuración de módulos' })).getByRole('button', { name: 'Guardar' }))
     await waitFor(() => expect(requests[0]?.body).toMatchObject({ trivia: { enabled: true }, stories: { enabled: true }, predictions: { autoResolve: true, title: '¿Gana esta partida?' }, tracking: { queues: [420, 450] } }))
   })
   it('manages the question bank without enabling games and presents per-game win totals', async () => {

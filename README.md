@@ -24,7 +24,7 @@ npm run dev
 
 Dashboard: [localhost:5173](http://localhost:5173). API: [localhost:3000/api/health/live](http://localhost:3000/api/health/live). Vite usa proxy de `/api`; en producción Nest sirve el dashboard compilado bajo el mismo origen. Para OAuth en desarrollo registrar la URI del origen visible al navegador, por ejemplo `http://localhost:5173/api/auth/twitch/callback`, y usar ese mismo `APP_BASE_URL`.
 
-Configurar la app Twitch, secreto EventSub, `TOKEN_ENCRYPTION_KEY` (32 bytes en base64) y clave Riot. Ingresar como streamer, conectar broadcaster y bot por separado, y guardar el Riot ID/plataforma/routing en el resumen. Los mods no pueden conectar identidades en nombre del streamer. El webhook requiere HTTPS público; en desarrollo se puede usar un túnel HTTPS y Twitch CLI con el mismo callback `/api/eventsub`.
+Configurar la app Twitch, secreto EventSub, `TOKEN_ENCRYPTION_KEY` (32 bytes en base64) y clave Riot. Ingresar como streamer, conectar broadcaster y bot por separado, y guardar el Riot ID/plataforma/routing en Configuración. Los mods no pueden conectar identidades en nombre del streamer. El webhook requiere HTTPS público; en desarrollo se puede usar un túnel HTTPS y Twitch CLI con el mismo callback `/api/eventsub`.
 
 ```sh
 openssl rand -base64 32

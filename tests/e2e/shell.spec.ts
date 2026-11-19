@@ -39,12 +39,12 @@ test('navigates every administrative screen, submits a reminder and works on mob
   await expect(page.getByText('Cambios guardados.')).toBeVisible()
   await expect(page.getByText('Revisar la próxima partida', { exact: true })).toBeVisible()
   expect(writes).toEqual([{ text: 'Revisar la próxima partida' }])
-  for (const name of ['Predictions', 'Eventos y acciones', 'Features', 'Trivia e historias', 'Operación']) {
+  for (const name of ['Predictions', 'Eventos y acciones', 'Configuración', 'Trivia e historias', 'Operación']) {
     await page.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1 })).toContainText(name === 'Operación' ? 'Operación y auditoría' : name)
   }
   await page.setViewportSize({ width: 375, height: 812 })
-  await page.getByRole('link', { name: 'Features', exact: true }).click()
+  await page.getByRole('link', { name: 'Configuración', exact: true }).click()
   await expect(page.getByLabel('Resolver automáticamente; cancelar remakes')).toBeChecked()
   await expect(page.getByLabel('Trivia', { exact: true })).not.toBeChecked()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)

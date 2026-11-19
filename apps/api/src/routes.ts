@@ -8,6 +8,9 @@ import { Auth } from '../../../packages/infrastructure/src/auth.js'
 import type { Purpose } from '../../../packages/infrastructure/src/auth.js'
 import { Twitch, integrationConfig } from '../../../packages/infrastructure/src/adapters/twitch.js'
 import { Riot } from '../../../packages/infrastructure/src/adapters/riot.js'
+import { loadAvatar } from '../../../packages/infrastructure/src/branding.js'
+import type { Avatar } from '../../../packages/infrastructure/src/branding.js'
+import { logger } from '../../../packages/infrastructure/src/logger.js'
 import { normalize, verifyWebhook } from '../../../packages/infrastructure/src/adapters/eventsub.js'
 import { DomainError, accountSchema, settingsSchema } from '../../../packages/features/src/model.js'
 import { addReminder, cancelReminder } from '../../../packages/features/src/reminders.js'
@@ -24,7 +27,7 @@ function parse<T> (schema: z.ZodType<T>, value: unknown): T {
   return result.data
 }
 function header (r: FastifyRequest, name: string) { const v = r.headers[name]; return typeof v === 'string' ? v : undefined }
-export function installRoutes (server: FastifyInstance, pool: Pool | undefined, channel: string, document: OpenAPIObject, gateway?: Twitch) {
+export function installRoutes (server: FastifyInstance, pool: Pool | undefined, channel: string, document: OpenAPIObject, gateway?: Twitch, botLogin = 'longibot') {
   const store = pool ? new Store(pool, channel) : undefined
   const services = () => {
     if (!store) throw new DomainError('Base de datos no disponible', 503)
@@ -36,6 +39,10 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
     if (mutation) ctx.auth.csrf(user, header(r, 'origin'), header(r, 'x-csrf-token'))
     return { ...ctx, user, actor: { id: user.userId, name: user.name, admin: true }, audit: (action: string) => ({ userId: user.userId, action }) }
   }
+  // Fetched once per process start (every deploy); failures fall back to the text mark.
+  const avatar: Promise<Avatar | undefined> = (async () => services().twitch)()
+    .then(twitch => loadAvatar(twitch, botLogin))
+    .catch(() => { logger.warn('No se pudo obtener el avatar del bot en Twitch'); return undefined })
   const cookieOptions = { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' as const }
   // Fastify encapsulation keeps provider/database error details out of responses.
   server.setErrorHandler((error, _req, reply) => {
@@ -59,6 +66,11 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
       reply.setCookie('lb_session', id, { ...cookieOptions, maxAge: 28800 })
     }
     return reply.redirect('/')
+  })
+  server.get('/api/branding/avatar', async (_r, reply) => {
+    const image = await avatar
+    if (!image) return reply.code(404).send({ message: 'Avatar no disponible' })
+    return reply.type(image.type).header('cache-control', 'public, max-age=3600').send(image.body)
   })
   server.get('/api/auth/me', async r => { const { user } = await session(r); return { ...user, channel } })
   server.post('/api/auth/logout', async (r, reply) => {
