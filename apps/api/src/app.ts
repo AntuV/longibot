@@ -54,7 +54,7 @@ export async function createApp (options: { pool?: Pool, logging?: boolean, stat
   }
   app.enableShutdownHooks()
   const document = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('LongiBot API').setVersion('0.1.0').build())
-  server.register(async scope => { installRoutes(scope, options.pool, config.TWITCH_CHANNEL, document, options.twitch, config.BOT_TWITCH_LOGIN) })
+  server.register(async scope => { installRoutes(scope, options.pool, config.TWITCH_CHANNEL, document, options.twitch, config.BOT_TWITCH_LOGIN, config.BOT_MANAGER_TWITCH_LOGINS) })
   await app.init()
   await server.ready()
   return { app, document, config }

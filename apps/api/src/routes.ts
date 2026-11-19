@@ -27,12 +27,12 @@ function parse<T> (schema: z.ZodType<T>, value: unknown): T {
   return result.data
 }
 function header (r: FastifyRequest, name: string) { const v = r.headers[name]; return typeof v === 'string' ? v : undefined }
-export function installRoutes (server: FastifyInstance, pool: Pool | undefined, channel: string, document: OpenAPIObject, gateway?: Twitch, botLogin = 'longibot') {
+export function installRoutes (server: FastifyInstance, pool: Pool | undefined, channel: string, document: OpenAPIObject, gateway?: Twitch, botLogin = 'longibot', botManagers: readonly string[] = ['antuv']) {
   const store = pool ? new Store(pool, channel) : undefined
   const services = () => {
     if (!store) throw new DomainError('Base de datos no disponible', 503)
     const twitch = gateway ?? new Twitch(store, integrationConfig())
-    return { store, twitch, auth: new Auth(store, twitch) }
+    return { store, twitch, auth: new Auth(store, twitch, botManagers) }
   }
   const session = async (r: FastifyRequest, mutation = false) => {
     const ctx = services(); const user = await ctx.auth.session(r.cookies.lb_session)
@@ -51,7 +51,7 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
     reply.code(status).send({ message: e instanceof DomainError ? e.message : status === 400 ? 'Solicitud inválida' : 'Servicio no disponible' })
   })
   server.get('/api/auth/twitch', async (r, reply) => {
-    const purpose = parse(z.object({ purpose: z.enum(['dashboard', 'broadcaster']).default('dashboard') }), r.query).purpose as Purpose
+    const purpose = parse(z.object({ purpose: z.enum(['dashboard', 'broadcaster', 'bot']).default('dashboard') }), r.query).purpose as Purpose
     const { auth } = services()
     const result = await auth.start(purpose, r.cookies.lb_session)
     return reply.setCookie('lb_oauth', result.state, { ...cookieOptions, maxAge: 600 }).redirect(result.url)

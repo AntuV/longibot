@@ -1,5 +1,5 @@
 import type { State } from '../../../packages/features/src/model.js'
-export interface User { userId: string, name: string, csrf: string, admin: true, streamer: boolean, channel: string }
+export interface User { userId: string, name: string, csrf: string, admin: true, streamer: boolean, botManager: boolean, channel: string }
 export interface Snapshot { channel: string, broadcasterId: string, state: State }
 export interface Operations { failedJobs?: { id: string, name: string, retry_count: number, created_on: string }[], audit: { user_id: string, action: string, at: string }[], events: { data: { id: string, type: string, at: number }, received_at: string }[], deliveries: { event_id: string, consumer: string, completed_at: string | null, attempts?: number, last_error?: string | null }[], connections: { purpose: string, user_id: string, updated_at: string }[], worker: { at: number } | null }
 export class ApiError extends Error { constructor (readonly status: number, text: string) { super(text) } }

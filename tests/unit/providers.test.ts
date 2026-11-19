@@ -26,8 +26,6 @@ describe('tokens and config', () => {
   it('validates integration config without revealing secrets', () => {
     const env = { TWITCH_CLIENT_ID: 'id', TWITCH_CLIENT_SECRET: 'secret', TWITCH_EVENTSUB_SECRET: 'long-secret', TOKEN_ENCRYPTION_KEY: key }
     expect(integrationConfig(env).baseUrl).toBe('http://localhost:3000')
-    expect(integrationConfig(env).bot).toBeUndefined()
-    expect(integrationConfig({ ...env, BOT_TWITCH_CLIENT_ID: ' ttg ', BOT_TWITCH_ACCESS_TOKEN: 'oauth:abc', BOT_TWITCH_REFRESH_TOKEN: 'ref' }).bot).toEqual({ clientId: 'ttg', accessToken: 'abc', refreshToken: 'ref' })
     expect(() => integrationConfig({})).toThrow('Configurar')
     expect(() => integrationConfig({ ...env, TWITCH_EVENTSUB_SECRET: 'a'.repeat(101) })).toThrow()
     expect(() => integrationConfig({ ...env, TOKEN_ENCRYPTION_KEY: 'bad' })).toThrow('cifrado')
@@ -88,6 +86,7 @@ describe('EventSub signatures and normalization', () => {
   })
   it('reconciles required webhook subscriptions, pagination and already-registered entries', async () => {
     const twitch = new Twitch({} as Store, config)
+    vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'bot', userId: 'bot' })
     vi.spyOn(twitch, 'appAccess').mockResolvedValue('app')
     const helix = vi.spyOn(twitch, 'helix').mockResolvedValue({})
     helix.mockResolvedValueOnce({ data: [], pagination: { cursor: 'next' } }).mockResolvedValueOnce({ data: [{ type: 'stream.online', version: '1', condition: { broadcaster_user_id: 'b' }, status: 'enabled', transport: { callback: `${config.baseUrl}/api/eventsub` } }], pagination: {} })
@@ -95,7 +94,6 @@ describe('EventSub signatures and normalization', () => {
     expect(helix).toHaveBeenCalledWith('eventsub/subscriptions?after=next', 'app')
     const subscriptions = helix.mock.calls.filter(c => c[2] === 'POST').map(c => c[3])
     expect(subscriptions).toHaveLength(Object.keys(eventTypes).length - 1)
-    expect(subscriptions).toContainEqual(expect.objectContaining({ type: 'channel.chat.message', condition: { broadcaster_user_id: 'b', user_id: 'b' } }))
     expect(subscriptions).toContainEqual(expect.objectContaining({ type: 'channel.follow', version: '2', condition: { broadcaster_user_id: 'b', moderator_user_id: 'b' } }))
     helix.mockReset().mockResolvedValueOnce({ data: [], pagination: {} }).mockRejectedValue(new Error('missing consent'))
     await expect(reconcileSubscriptions(twitch, 'b')).rejects.toThrow('suscribir')
@@ -112,10 +110,8 @@ describe('Twitch HTTP adapter', () => {
     expect((await twitch.validate('token')).user_id).toBe('u')
     f.mockResolvedValueOnce(json({ client_id: 'other', user_id: 'u', login: 'user', scopes: [], expires_in: 3600 })); await expect(twitch.validate('token')).rejects.toThrow('otra aplicación')
     expect((await twitch.exchange('code')).accessToken).toBe('user')
-    vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'token', userId: 'bot', clientId: 'ttg' })
+    vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'token', userId: 'bot' })
     f.mockResolvedValueOnce(json({ data: [{ message_id: 'sent', is_sent: true }] })); expect(await twitch.send('b', 'hello')).toBe('sent')
-    expect(new Headers(f.mock.lastCall?.[1]?.headers).get('Client-Id')).toBe('ttg')
-    f.mockResolvedValueOnce(json({ client_id: 'ttg', user_id: 'bot', login: 'longibot', scopes: [], expires_in: 3600 })); expect((await twitch.validate('token', 'ttg')).login).toBe('longibot')
     f.mockResolvedValueOnce(json({ data: [{ message_id: '', is_sent: false }] })); await expect(twitch.send('b', 'hello')).rejects.toThrow('rechazó')
     const prediction = { id: 'p', title: 'Question?', status: 'ACTIVE', created_at: new Date().toISOString(), outcomes: [{ id: 'y', title: 'Yes' }, { id: 'n', title: 'No' }] }
     f.mockImplementation(async () => json({ data: [prediction] }))
@@ -198,7 +194,7 @@ it('uses the automatic redemption as the primary highlighted-message source and 
 })
 it('fetches old managed predictions by ID without relying on the latest page', async () => {
   const f = fetcher(); const twitch = new Twitch({} as Store, config, new Http(f))
-  vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'token', userId: 'b', clientId: 'client' })
+  vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'token', userId: 'b' })
   f.mockResolvedValueOnce(json({ data: [] }))
   expect(await twitch.predictions('b').get?.('old')).toBeNull()
   f.mockResolvedValueOnce(json({ data: [{ id: 'old', title: 'Q', created_at: new Date().toISOString(), status: 'RESOLVED', outcomes: [] }] }))

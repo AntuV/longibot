@@ -5,17 +5,18 @@ import type { Twitch } from './adapters/twitch.js'
 
 export const scopes = {
   dashboard: ['user:read:moderated_channels'],
-  broadcaster: ['channel:manage:predictions', 'channel:read:redemptions', 'bits:read', 'channel:read:subscriptions', 'moderator:read:followers', 'channel:bot', 'user:read:chat']
+  broadcaster: ['channel:manage:predictions', 'channel:read:redemptions', 'bits:read', 'channel:read:subscriptions', 'moderator:read:followers', 'channel:bot'],
+  bot: ['user:read:chat', 'user:write:chat', 'user:bot']
 } as const
 export type Purpose = keyof typeof scopes
-export interface Session { userId: string, name: string, csrf: string, admin: true, streamer: boolean }
+export interface Session { userId: string, name: string, csrf: string, admin: true, streamer: boolean, botManager: boolean }
 export type AuthTwitch = Pick<Twitch, 'config' | 'user' | 'exchange' | 'validate' | 'save' | 'access' | 'authorized'>
 export class Auth {
-  constructor (readonly store: Store, readonly twitch: AuthTwitch) {}
+  constructor (readonly store: Store, readonly twitch: AuthTwitch, readonly botManagers: readonly string[] = ['antuv']) {}
   async start (purpose: Purpose, sessionId?: string) {
     if (purpose !== 'dashboard') {
       const session = await this.session(sessionId)
-      if (!session.streamer) throw new DomainError('Solo el streamer puede conectar identidades', 403)
+      if (purpose === 'bot' ? !session.botManager : !session.streamer) throw new DomainError(purpose === 'bot' ? 'Solo el streamer o un moderador autorizado puede conectar el bot' : 'Solo el streamer puede conectar la cuenta del canal', 403)
     }
     const user = await this.twitch.user(this.store.channel)
     await this.store.initialize(user.id)
@@ -40,6 +41,7 @@ export class Auth {
     if (!broadcasterId) throw new DomainError('Canal no conectado', 503)
     if (purpose === 'broadcaster' && identity.user_id !== broadcasterId) throw new DomainError('Autorizar con la cuenta del streamer', 403)
     if (purpose === 'dashboard' && !await this.twitch.authorized(identity.user_id, token.accessToken, broadcasterId)) throw new DomainError('Acceso reservado a streamer y moderadores actuales', 403)
+    if (purpose === 'bot') await this.store.pool.query('DELETE FROM oauth_connections WHERE channel=$1 AND purpose=$2 AND user_id<>$3', [this.store.channel, purpose, identity.user_id])
     await this.twitch.save(purpose, identity.user_id, token)
     if (purpose !== 'dashboard') return undefined
     const id = opaque(); const csrf = opaque()
@@ -60,7 +62,9 @@ export class Auth {
       await this.logout(id)
       throw new DomainError('No se pudo verificar el acceso actual; volvé a iniciar sesión', 403)
     }
-    return { userId: session.user_id, name: session.name, csrf: session.csrf, admin: true, streamer: session.user_id === broadcasterId }
+    const streamer = session.user_id === broadcasterId
+    // session() re-checks current moderator status above, so a login in botManagers alone grants nothing.
+    return { userId: session.user_id, name: session.name, csrf: session.csrf, admin: true, streamer, botManager: streamer || this.botManagers.includes(session.name.toLowerCase()) }
   }
 
   csrf (session: Session, origin: string | undefined, csrf: string | undefined) {

@@ -13,6 +13,7 @@ import type { State } from '../../packages/features/src/model.js'
 globalThis.ResizeObserver ??= class { observe () {} unobserve () {} disconnect () {} }
 let state: State
 let streamer: boolean
+let botManager: boolean
 let fetcher: ReturnType<typeof vi.fn<typeof fetch>>
 const requests: { path: string, method: string, body: unknown }[] = []
 const user = { userId: 'b', name: 'Streamer', csrf: 'csrf', admin: true, streamer: true, channel: 'longii_' }
@@ -22,11 +23,11 @@ function mount (path = '/') {
   render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}><Routes><Route element={<Dashboard />}>{pages.map(p => <Route key={p.path} path={p.path} element={<p.component />} />)}</Route></Routes></MemoryRouter></QueryClientProvider>)
 }
 beforeEach(() => {
-  state = initialState(); streamer = true; requests.length = 0
+  state = initialState(); streamer = true; botManager = true; requests.length = 0
   fetcher = vi.fn<typeof fetch>().mockImplementation(async (url, init) => {
     const path = String(url); const method = init?.method ?? 'GET'
     if (method !== 'GET') { requests.push({ path, method, body: init?.body ? JSON.parse(String(init.body)) : null }); return Response.json({ ok: true }) }
-    if (path.endsWith('auth/me')) return Response.json({ ...user, streamer })
+    if (path.endsWith('auth/me')) return Response.json({ ...user, streamer, botManager })
     if (path.endsWith('admin/state')) return Response.json({ channel: 'longii_', broadcasterId: 'b', state })
     return Response.json({ audit: [{ user_id: 'b', action: 'settings.update', at: 'today' }], events: [{ data: { id: 'e', type: 'stream.started.v1', at: 0 }, received_at: 'today' }], deliveries: [{ event_id: 'e', consumer: 'reminders', completed_at: null }], connections: [{ purpose: 'bot', user_id: 'bot', updated_at: 'today' }], worker: { at: 1_000_000 } })
   })
@@ -60,7 +61,7 @@ describe('administration screens', () => {
     mount(); expect(await screen.findByRole('heading', { name: 'Hola, Streamer' })).toBeTruthy()
     expect(screen.getAllByText('En vivo').length).toBeGreaterThan(0); expect(screen.getByText('En juego')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Nada necesita atención' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Conectar cuenta del canal' })).toBeTruthy(); expect(screen.queryByRole('link', { name: 'Conectar cuenta del bot' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Conectar cuenta del bot' })).toBeTruthy()
     cleanup(); mount('/features')
     const form = await screen.findByRole('form', { name: 'Cuenta de League of Legends' })
     fireEvent.change(within(form).getByLabelText('Riot ID (nombre) *'), { target: { value: 'Name' } })
@@ -87,8 +88,12 @@ describe('administration screens', () => {
     expect(screen.getByRole('button', { name: 'Más', hidden: true }).getAttribute('aria-expanded')).toBe('false')
   })
   it('shows mod access and idle state without broadcaster-only links', async () => {
-    streamer = false; state.tracking = 'idle'; state.account = { gameName: 'Saved', tagLine: 'TAG', platform: 'euw1', region: 'europe', puuid: 'p' }
+    streamer = false; botManager = false; state.tracking = 'idle'; state.account = { gameName: 'Saved', tagLine: 'TAG', platform: 'euw1', region: 'europe', puuid: 'p' }
     mount(); expect(await screen.findByText('Sin partida')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Conectar cuenta del canal' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Conectar cuenta del bot' })).toBeNull()
+    cleanup(); botManager = true; mount()
+    expect(await screen.findByRole('link', { name: 'Conectar cuenta del bot' })).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Conectar cuenta del canal' })).toBeNull()
     cleanup(); mount('/features')
     expect(await screen.findByLabelText('Riot ID (nombre) *')).toHaveProperty('value', 'Saved')

@@ -47,10 +47,11 @@ export function normalize (id: string, type: string, data: Record<string, unknow
   return { id, type: internal === 'twitch.automatic_reward.redeemed.v1' && reward.success && reward.data.type === 'send_highlighted_message' ? 'twitch.message.highlighted.v1' : internal, at, data: { provider: type, providerId: id, ...(typeof userId === 'string' ? { userId } : {}), ...(typeof userName === 'string' ? { userName } : {}), anonymous, admin, self: identities.botId !== undefined && userId === identities.botId, ...(message.success ? { text: message.data.text } : {}), ...(reward.success ? { rewardId: reward.data.id, rewardType: reward.data.type } : {}), isGift: data.is_gift === true, payment: type === 'channel.bits.use' ? 'bits' : type.includes('reward') ? 'channel_points' : null, subtype: data.type ?? null, ...(internal === 'prediction.state.changed.v1' ? { id: data.id, status: String(status).toUpperCase() } : {}), raw: data } }
 }
 export async function reconcileSubscriptions (twitch: Twitch, broadcasterId: string) {
+  const bot = await twitch.access('bot')
   const desired = Object.keys(eventTypes).map(type => ({
     type,
     version: type === 'channel.follow' || type === 'channel.channel_points_automatic_reward_redemption.add' ? '2' : '1',
-    condition: { broadcaster_user_id: broadcasterId, ...(type === 'channel.chat.message' ? { user_id: broadcasterId } : {}), ...(type === 'channel.follow' ? { moderator_user_id: broadcasterId } : {}) },
+    condition: { broadcaster_user_id: broadcasterId, ...(type === 'channel.chat.message' ? { user_id: bot.userId } : {}), ...(type === 'channel.follow' ? { moderator_user_id: broadcasterId } : {}) },
     transport: { method: 'webhook', callback: `${twitch.config.baseUrl}/api/eventsub`, secret: twitch.config.eventSecret }
   }))
   const access = await twitch.appAccess()

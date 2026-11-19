@@ -48,7 +48,7 @@ export class Worker {
         try {
           const broadcaster = await this.twitch.access('broadcaster', broadcasterId)
           await this.twitch.validate(broadcaster.token)
-          const bot = await this.twitch.access('bot'); await this.twitch.validate(bot.token, bot.clientId)
+          const bot = await this.twitch.access('bot'); await this.twitch.validate(bot.token)
           // Reconcile initial live state without waiting for a new online event.
           const live = await this.twitch.helix(`streams?user_id=${broadcasterId}`, await this.twitch.appAccess()) as { data?: unknown[] }
           await this.store.change(s => { s.live = Array.isArray(live.data) && live.data.length > 0 })

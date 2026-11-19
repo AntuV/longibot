@@ -971,20 +971,33 @@ function Summary () {
         </Section>
         <Section title='Cuentas de Twitch' className='span'>
           <p className='text-muted-foreground'>
-            Conectá acá la cuenta del canal. La cuenta del bot se configura con
-            variables de entorno en el servidor; el estado de ambas está en Operación.
+            La cuenta del canal y la del bot se conectan por separado. Los
+            permisos quedan guardados en el servidor; el estado está en Operación.
           </p>
-          {user.streamer
+          {user.botManager
             ? (
-                <Button asChild variant='outline' className='w-fit'>
-                  <a href='/api/auth/twitch?purpose=broadcaster'>
-                    Conectar cuenta del canal
-                  </a>
-                </Button>
+                <div className='flex flex-wrap gap-3'>
+                  {user.streamer && (
+                    <Button asChild variant='outline'>
+                      <a href='/api/auth/twitch?purpose=broadcaster'>
+                        Conectar cuenta del canal
+                      </a>
+                    </Button>
+                  )}
+                  <Button asChild variant='outline'>
+                    <a href='/api/auth/twitch?purpose=bot'>Conectar cuenta del bot</a>
+                  </Button>
+                </div>
               )
             : (
-                <p>Solo el streamer puede conectar la cuenta del canal.</p>
+                <p>Solo el streamer puede conectar estas cuentas.</p>
               )}
+          {user.botManager && !user.streamer && (
+            <p className='text-sm text-muted-foreground'>
+              La cuenta del canal la conecta el streamer. Para el bot, autorizá
+              con la cuenta del bot, no con la tuya.
+            </p>
+          )}
         </Section>
       </div>
     </>

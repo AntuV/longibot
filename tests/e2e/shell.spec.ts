@@ -20,7 +20,7 @@ test('deep links use the SPA while unknown API routes stay 404', async ({ page, 
 
 test('navigates every administrative screen, submits a reminder and works on mobile', async ({ page }) => {
   const state = initialState()
-  const user = { userId: 'b', name: 'Streamer', csrf: 'csrf', streamer: true, admin: true, channel: 'longii_' }
+  const user = { userId: 'b', name: 'Streamer', csrf: 'csrf', streamer: true, botManager: true, admin: true, channel: 'longii_' }
   const writes: unknown[] = []
   await page.route('**/api/auth/me', route => route.fulfill({ json: user }))
   await page.route('**/api/admin/state', route => route.fulfill({ json: { channel: 'longii_', broadcasterId: 'b', state } }))
