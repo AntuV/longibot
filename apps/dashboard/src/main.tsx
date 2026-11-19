@@ -6,7 +6,17 @@ import { Dashboard, pages } from './dashboard.js'
 import './style.css'
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 10_000, retry: 1 } } })
-function NotFound () { return <main className='login'><h1>Página no encontrada</h1><a href='/'>Volver al inicio</a></main> }
+function NotFound () {
+  return (
+    <main className='login'>
+      <section className='splash' data-calm='' data-quiet='' aria-labelledby='not-found'>
+        <h1 id='not-found' className='text-3xl'>Página no encontrada</h1>
+        <p className='text-muted-foreground'>Esta dirección no existe en el panel.</p>
+        <a className='w-fit font-bold underline underline-offset-4' href='/'>Volver al inicio</a>
+      </section>
+    </main>
+  )
+}
 createRoot(document.getElementById('root')!).render(
   <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter><Routes><Route element={<Dashboard />}>{pages.map(p => <Route key={p.path} path={p.path} element={<p.component />} />)}</Route><Route path='*' element={<NotFound />} /></Routes></BrowserRouter></QueryClientProvider></StrictMode>
 )

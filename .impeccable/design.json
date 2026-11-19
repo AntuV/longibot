@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T03:09:10.889898+00:00",
+  "title": "Design System: LongiBot",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#111110",
+        "tonalRamp": [
+          "#040404",
+          "#080808",
+          "#0d0d0c",
+          "#111110",
+          "#4c4c4c",
+          "#888888",
+          "#b8b8b7",
+          "#e2e2e2"
+        ]
+      },
+      "stock": {
+        "role": "neutral",
+        "displayName": "Panel Stock",
+        "canonical": "#1b1a17",
+        "tonalRamp": [
+          "#070606",
+          "#0e0d0c",
+          "#141411",
+          "#1b1a17",
+          "#545351",
+          "#8d8c8b",
+          "#bbbab9",
+          "#e4e4e3"
+        ]
+      },
+      "stock-raised": {
+        "role": "neutral",
+        "displayName": "Raised Stock",
+        "canonical": "#24221e",
+        "tonalRamp": [
+          "#090808",
+          "#12110f",
+          "#1b1a16",
+          "#24221e",
+          "#5b5956",
+          "#92908e",
+          "#bdbdbc",
+          "#e5e4e4"
+        ]
+      },
+      "accent-stock": {
+        "role": "neutral",
+        "displayName": "Accent Stock",
+        "canonical": "#2c2a25",
+        "tonalRamp": [
+          "#0b0a09",
+          "#161512",
+          "#21201c",
+          "#2c2a25",
+          "#615f5c",
+          "#969492",
+          "#c0bfbe",
+          "#e6e5e5"
+        ]
+      },
+      "tone": {
+        "role": "neutral",
+        "displayName": "Screentone Grey",
+        "canonical": "#5f5b53",
+        "tonalRamp": [
+          "#181715",
+          "#302e2a",
+          "#47443e",
+          "#5f5b53",
+          "#87847e",
+          "#afada9",
+          "#cfcecb",
+          "#ecebea"
+        ]
+      },
+      "paper-dim": {
+        "role": "neutral",
+        "displayName": "Faded Ink",
+        "canonical": "#a8a296",
+        "tonalRamp": [
+          "#2a2826",
+          "#54514b",
+          "#7e7a70",
+          "#a8a296",
+          "#beb9b0",
+          "#d4d0ca",
+          "#e5e3e0",
+          "#f5f4f2"
+        ]
+      },
+      "panel-line": {
+        "role": "neutral",
+        "displayName": "Panel Line",
+        "canonical": "#d9d3c5",
+        "tonalRamp": [
+          "#363531",
+          "#6c6a62",
+          "#a39e94",
+          "#d9d3c5",
+          "#e2ded4",
+          "#ece9e2",
+          "#f4f2ee",
+          "#fafaf8"
+        ]
+      },
+      "paper": {
+        "role": "primary",
+        "displayName": "Paper",
+        "canonical": "#ede8dc",
+        "tonalRamp": [
+          "#3b3a37",
+          "#76746e",
+          "#b2aea5",
+          "#ede8dc",
+          "#f2eee5",
+          "#f6f4ee",
+          "#faf8f4",
+          "#fdfcfb"
+        ]
+      },
+      "red": {
+        "role": "secondary",
+        "displayName": "Alarm Red",
+        "canonical": "#ee5a4f",
+        "tonalRamp": [
+          "#3c1614",
+          "#772d28",
+          "#b2443b",
+          "#ee5a4f",
+          "#f2837b",
+          "#f6aca7",
+          "#faceca",
+          "#fdebea"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Splash panel title."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel titles and field legends."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Tallies and record cells."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All running text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "State chips, caption boxes, on-air indicator."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Literal chat commands in <code> only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "floating-overlay",
+        "value": "0 10px 28px rgb(0 0 0 / 55%)",
+        "purpose": "Toast only."
+      },
+      {
+        "name": "sheet",
+        "value": "0 -12px 32px rgb(0 0 0 / 60%)",
+        "purpose": "Phone «Más» sheet above the tab bar."
+      },
+      {
+        "name": "on-air-halo",
+        "value": "0 0 0 3px rgb(238 90 79 / 25%)",
+        "purpose": "Ring around the live dot."
+      }
+    ],
+    "motion": [
+      {
+        "name": "slam",
+        "value": "0.45s cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "One-time entrance of the alert splash panel (scale 1.035 to 1, opacity .4 to 1); none under reduced motion."
+      },
+      {
+        "name": "state-transition",
+        "value": "0.15s",
+        "purpose": "Nav link background and color."
+      },
+      {
+        "name": "toast",
+        "value": "0.2s ease-out",
+        "purpose": "Toast fade and 0.5rem slide; none under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "850px",
+        "purpose": "At or below: rail hidden, top bar and bottom tab bar, 44px targets."
+      }
+    ],
+    "textures": [
+      {
+        "name": "screentone",
+        "value": "radial-gradient(circle, #5f5b53 1.1px, transparent 1.4px) 0 0 / 6px 6px",
+        "purpose": "Remake cells and the calm splash open corner; never under text."
+      },
+      {
+        "name": "speed-lines",
+        "value": "repeating-conic-gradient(from 0deg at 88% 18%, rgb(237 232 220 / 11%) 0 1.3deg, transparent 1.3deg 6.5deg)",
+        "purpose": "Alert splash panel only."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid paper slab for the main action of a panel and the splash action.",
+      "html": "<button class=\"ds-btn-primary\">Vincular prediction</button>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-primary{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:var(--paper);color:var(--ink);border:2px solid var(--paper)} .ds-btn-primary:hover{background:#d9d3c5} .ds-btn-primary:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Framed secondary action; hover fills with raised stock.",
+      "html": "<button class=\"ds-btn-outline\">Ver la cola</button>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-outline{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:transparent;color:var(--paper);border:2px solid var(--panel-line)} .ds-btn-outline:hover{background:var(--stock-raised)} .ds-btn-outline:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Outlined in red for dangerous actions; never a solid red slab.",
+      "html": "<button class=\"ds-btn-danger\">Cancelar prediction y reembolsar</button>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-danger{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:transparent;color:var(--red);border:2px solid var(--red)} .ds-btn-danger:hover{background:rgb(238 90 79 / 14%)} .ds-btn-danger:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "2px stroke at paper 30%, nearly square, paper caret.",
+      "html": "<input class=\"ds-input\" placeholder=\"!duo\" />",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-input{font-family:var(--font-sans);font-size:1rem;color:var(--paper);background:transparent;border:2px solid rgb(237 232 220 / 30%);border-radius:2px;padding:.5rem .75rem;min-height:2.75rem;caret-color:var(--paper)} .ds-input::placeholder{color:var(--paper-dim)} .ds-input:focus-visible{outline:3px solid rgb(237 232 220 / 50%);border-color:var(--paper)}"
+    },
+    {
+      "name": "State Chips",
+      "kind": "chip",
+      "refersTo": "state-live",
+      "description": "State words carry form: solid live, dashed pending, red alert, quiet done.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-state ds-live\">En juego</span><span class=\"ds-state ds-pending\">Pendiente</span><span class=\"ds-state ds-alert\">Falló</span><span class=\"ds-state ds-done\">Entregado</span></div>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-row{display:flex;gap:.5rem;flex-wrap:wrap;background:var(--stock);padding:1rem} .ds-state{display:inline-flex;align-items:center;padding:.05rem .5rem;border:2px solid var(--panel-line);font-family:var(--font-sans);font-size:.8125rem;font-weight:700;color:var(--paper)} .ds-pending{border-style:dashed;color:var(--paper-dim)} .ds-alert{border-color:var(--red);color:var(--red)} .ds-done{border-color:rgb(237 232 220 / 16%);color:var(--paper-dim)} .ds-live{background:var(--paper);color:var(--ink)}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Every card is a manga panel: stock fill, 3px panel-line frame, flat.",
+      "html": "<section class=\"ds-panel\"><h2>Al final de la partida</h2><p>Avisar que el sorteo de la skin es al final del stream.</p></section>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-panel{background:var(--stock);color:var(--paper);border:3px solid var(--panel-line);border-radius:2px;padding:1.25rem;font-family:var(--font-sans);line-height:1.6} .ds-panel h2{font-family:var(--font-display);font-weight:400;font-size:1.125rem;line-height:1.3;margin:0 0 .5rem} .ds-panel p{margin:0;color:var(--paper-dim)}"
+    },
+    {
+      "name": "Navigation Rail",
+      "kind": "nav",
+      "refersTo": "navlink-active",
+      "description": "Desktop rail items; the active item inverts to solid paper.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-navlink\" aria-current=\"page\" href=\"#\">Resumen</a><a class=\"ds-navlink\" href=\"#\">Recordatorios</a><a class=\"ds-navlink\" href=\"#\">Predictions</a></nav>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-nav{display:flex;flex-direction:column;gap:.25rem;background:var(--ink);padding:1rem;width:15rem;border-right:3px solid var(--panel-line)} .ds-navlink{display:flex;align-items:center;min-height:2.5rem;padding:0 .75rem;border-radius:2px;font-family:var(--font-sans);font-weight:700;color:var(--paper-dim);text-decoration:none;transition:background .15s,color .15s} .ds-navlink:hover{color:var(--paper);background:var(--stock)} .ds-navlink[aria-current=page]{color:var(--ink);background:var(--paper)} .ds-navlink:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+    },
+    {
+      "name": "Record (ficha)",
+      "kind": "custom",
+      "refersTo": "record-win",
+      "description": "Night record cells: win paper, loss red, remake screentone, in progress dashed.",
+      "html": "<ol class=\"ds-record\"><li class=\"ds-live\">·</li><li class=\"ds-win\">V</li><li class=\"ds-loss\">D</li><li class=\"ds-remake\">R</li><li class=\"ds-win\">V</li></ol>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-record{display:flex;gap:.375rem;padding:1rem;margin:0;background:var(--stock)} .ds-record li{list-style:none;display:grid;place-items:center;width:2.25rem;height:2.25rem;border:2px solid var(--panel-line);font-family:var(--font-display);color:var(--paper)} .ds-win{background:var(--paper);color:var(--ink)!important} .ds-loss{background:var(--red);border-color:var(--red)!important;color:var(--ink)!important} .ds-remake{background:var(--screentone)} .ds-live{border-style:dashed!important}"
+    },
+    {
+      "name": "Splash Panel (alert)",
+      "kind": "custom",
+      "refersTo": "splash-tag-alert",
+      "description": "Signature: tilted, speed lines, red caption box in the corner; only when something needs a human.",
+      "html": "<section class=\"ds-splash\"><span class=\"ds-tag\">Necesita atención</span><h2>Twitch no confirmó la <em>prediction</em></h2><p>Partida LA2_1483955 · hace 2 horas.</p><button class=\"ds-act\">Vincular prediction</button></section>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-splash{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.75rem;padding:3.25rem 1.25rem 1.375rem;border:4px solid var(--panel-line);border-radius:2px;background:var(--stock);color:var(--paper);font-family:var(--font-sans);transform:rotate(-.8deg);margin:.5rem;animation:ds-slam .45s cubic-bezier(.16,1,.3,1)} .ds-splash::before{content:\"\";position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 88% 18%,rgb(237 232 220 / 11%) 0 1.3deg,transparent 1.3deg 6.5deg);mask:radial-gradient(circle at 88% 18%,transparent 9%,#000 40%)} .ds-splash>*{position:relative;margin:0} .ds-splash h2{font-family:var(--font-display);font-weight:400;font-size:2rem;line-height:1.1} .ds-splash em{font-style:normal;color:var(--red)} .ds-tag{position:absolute!important;top:0;left:0;padding:.3rem .75rem .35rem;border-right:3px solid var(--panel-line);border-bottom:3px solid var(--panel-line);background:var(--red);color:var(--ink);font-weight:700;font-size:.8125rem} .ds-act{align-self:flex-start;font-family:var(--font-sans);font-weight:700;background:var(--paper);color:var(--ink);border:0;border-radius:2px;padding:.6rem 1rem;min-height:2.75rem;cursor:pointer} .ds-act:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px} @keyframes ds-slam{from{transform:rotate(-.8deg) scale(1.035);opacity:.4}to{transform:rotate(-.8deg) scale(1);opacity:1}} @media (prefers-reduced-motion:reduce){.ds-splash{animation:none}}"
+    },
+    {
+      "name": "Splash Panel (calm)",
+      "kind": "custom",
+      "refersTo": "splash-tag-calm",
+      "description": "Settled state: untilted, paper caption box, screentone from the open corner, never under text.",
+      "html": "<section class=\"ds-calm\"><span class=\"ds-tag\">Todo en orden</span><h2>Nada necesita atención</h2><p>Si algo se traba, aparece acá primero.</p></section>",
+      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-calm{position:relative;display:flex;flex-direction:column;gap:.75rem;padding:3.25rem 1.25rem 1.375rem;border:3px solid var(--panel-line);border-radius:2px;color:var(--paper);font-family:var(--font-sans);background:linear-gradient(105deg,var(--stock) 50%,rgb(27 26 23 / 0%) 82%),var(--screentone);background-color:var(--stock)} .ds-calm>*{margin:0} .ds-calm h2{font-family:var(--font-display);font-weight:400;font-size:2rem;line-height:1.1} .ds-calm p{color:var(--paper-dim)} .ds-tag{position:absolute;top:0;left:0;padding:.3rem .75rem .35rem;border-right:3px solid var(--panel-line);border-bottom:3px solid var(--panel-line);background:var(--paper);color:var(--ink);font-weight:700;font-size:.8125rem}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La viñeta",
+    "overview": "The dashboard is an inked manga page printed in reverse for night use. Every job sits in its own panel: dark stock framed in a heavy paper-colored line, separated by black gutters. The page is calm and orderly until something needs a human; then one panel breaks the grid. It tilts, gains speed lines, and carries a red caption box. That break is the whole signature, and it only means one thing.\n\nThe system is dark only. The mods operate it from a phone at night, mid-stream, so legibility outranks atmosphere: the world never hides a state, and every state reads through form as well as color (solid, dashed, screentone, red). Ornament is limited to devices a manga page already has: frames, gutters, caption boxes, screentone, speed lines. Shadcn/ui components remain underneath, restyled through tokens and attribute selectors rather than replaced.\n\nIt refuses the stacked grey cards of a stock admin panel. Nothing floats on soft shadows; panels sit flat on the page, held by their frames.",
+    "keyCharacteristics": [
+      "Dark only: ink ground, dark stock panels, paper-colored ink for text and frames.",
+      "3px panel frames with nearly square corners (2px) and black gutters between panels.",
+      "One red, for urgent and dangerous things only.",
+      "State grammar by form: solid paper, dashed outline, screentone, red.",
+      "Two faces: a heavy display gothic for titles and numbers, a quiet gothic for text.",
+      "One signature: the splash panel, tilted with speed lines when something needs a human, settled and untilted when all is in order."
+    ],
+    "rules": [
+      {
+        "name": "The One Red Rule",
+        "body": "Red means urgent or dangerous: an alert, a loss, a destructive action, a live broadcast. It never decorates, never marks a section, never appears on a calm screen except the on-air dot.",
+        "section": "colors"
+      },
+      {
+        "name": "The Reversed Ink Rule",
+        "body": "Paper is ink here. Emphasis and \"active\" are shown by inverting to a solid paper fill with ink text, not by a new hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lettering Rule",
+        "body": "Dela Gothic One is for titles, numbers and legends only. It never sets a sentence of running text, a button or a label.",
+        "section": "typography"
+      },
+      {
+        "name": "The Chat Command Rule",
+        "body": "Monospace appears only for literal chat commands inside `<code>`, on raised stock with a 2px corner.",
+        "section": "typography"
+      },
+      {
+        "name": "The 44px Rule",
+        "body": "On the phone, buttons, inputs, selects, checkbox rows and nav items are never shorter than 2.75rem.",
+        "section": "layout"
+      },
+      {
+        "name": "The Frame, Not Shadow Rule",
+        "body": "Anything that sits on the page is held by its frame. Shadows exist only for things that float above the page (toast, sheet).",
+        "section": "elevation"
+      },
+      {
+        "name": "The Splash Rule",
+        "body": "Tilt, speed lines and the red caption box mean \"needs a human\" and appear nowhere else in the product.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** frame every panel with a 3px panel-line border and a 2px corner, on panel stock, separated by ink gutters.",
+      "**Do** show every state by form as well as color: solid paper (win, live), red (loss, alert), screentone (remake), dashed (pending, in progress).",
+      "**Do** invert to solid paper with ink text for the active nav item, active tab and primary action.",
+      "**Do** keep screentone in open areas, never under text.",
+      "**Do** confirm irreversible actions inline in a dashed panel before they run.",
+      "**Do** keep every phone target at 44px (2.75rem) or more.",
+      "**Do** disable the slam entrance and transitions under `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "**Don't** use red for anything that is not urgent or dangerous (the on-air dot is the one exception).",
+      "**Don't** tilt, add speed lines or use the red caption box outside the alert splash panel.",
+      "**Don't** put soft drop shadows on panels; only the toast and the phone sheet float.",
+      "**Don't** set running text, buttons or labels in Dela Gothic One.",
+      "**Don't** add a light theme; this system is dark only.",
+      "**Don't** round panels, buttons or inputs beyond 2px.",
+      "**Don't** fill destructive buttons with solid red; they are outlined."
+    ]
+  }
+}
