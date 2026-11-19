@@ -1,7 +1,58 @@
-import { useId, useState } from 'react'
+import { Fragment, useId, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { NavLink, Outlet, useOutletContext } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from '@/components/ui/collapsible'
+import {
+  Empty as EmptyState,
+  EmptyDescription,
+  EmptyHeader
+} from '@/components/ui/empty'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet
+} from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
 import { api, ApiError } from './api.js'
 import type { User, Snapshot, Operations } from './api.js'
 import type { Settings } from '../../../packages/features/src/model.js'
@@ -15,6 +66,37 @@ export const pages = [
   { path: '/juegos', label: 'Trivia e historias', component: Games },
   { path: '/operacion', label: 'Operación', component: Operation }
 ]
+export const eventLabels: Record<string, string> = {
+  'twitch.redemption.created.v1': 'Canje de recompensa personalizada',
+  'twitch.redemption.updated.v1':
+    'Canje de recompensa actualizado (completado o rechazado)',
+  'twitch.automatic_reward.redeemed.v1': 'Canje de recompensa automática',
+  'twitch.bits.used.v1': 'Uso de Bits (incluye Power-ups)',
+  'twitch.message.highlighted.v1': 'Mensaje destacado',
+  'twitch.subscription.started.v1': 'Nueva suscripción',
+  'twitch.subscription.message.v1': 'Resuscripción con mensaje',
+  'twitch.subscriptions.gifted.v1': 'Suscripciones regaladas',
+  'twitch.followed.v1': 'Nuevo seguidor'
+}
+const platforms = [
+  'la1',
+  'la2',
+  'na1',
+  'br1',
+  'euw1',
+  'eun1',
+  'kr',
+  'jp1',
+  'oc1',
+  'tr1',
+  'ru',
+  'ph2',
+  'sg2',
+  'th2',
+  'tw2',
+  'vn2'
+]
+const regions = ['americas', 'europe', 'asia', 'sea']
 interface Context {
   user: User
   snapshot: Snapshot
@@ -43,25 +125,37 @@ export function Dashboard () {
   if (user.isPending) {
     return (
       <main className='login'>
-        <h1>LongiBot</h1>
-        <p role='status'>Verificando sesión…</p>
+        <h1 className='text-3xl font-semibold'>LongiBot</h1>
+        <p role='status' className='text-muted-foreground'>
+          Verificando sesión…
+        </p>
       </main>
     )
   }
   if (user.isError) {
     return (
       <main className='login'>
-        <span className='eyebrow'>LongiBot · Centro de control</span>
-        <h1>Tu canal, en orden.</h1>
-        <p>Partidas, predictions y recordatorios en un solo lugar.</p>
-        <a className='button primary' href='/api/auth/twitch'>
-          Ingresar con Twitch
-        </a>
-        <p role='status'>
-          {user.error instanceof ApiError && user.error.status === 401
-            ? 'Acceso para el streamer y moderadores actuales.'
-            : user.error.message}
-        </p>
+        <Card>
+          <CardHeader>
+            <span className='eyebrow'>LongiBot · Centro de control</span>
+            <CardTitle className='text-3xl'>
+              <h1>Tu canal, en orden.</h1>
+            </CardTitle>
+            <CardDescription>
+              Partidas, predictions y recordatorios en un solo lugar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='flex flex-col gap-4'>
+            <Button asChild size='lg' className='w-fit'>
+              <a href='/api/auth/twitch'>Ingresar con Twitch</a>
+            </Button>
+            <p role='status' className='text-sm text-muted-foreground'>
+              {user.error instanceof ApiError && user.error.status === 401
+                ? 'Acceso para el streamer y moderadores actuales.'
+                : user.error.message}
+            </p>
+          </CardContent>
+        </Card>
       </main>
     )
   }
@@ -75,15 +169,27 @@ export function Dashboard () {
         <p className='eyebrow'>#{user.data.channel}</p>
         <nav aria-label='Administración'>
           {pages.map((p) => (
-            <NavLink key={p.path} to={p.path} end={p.path === '/'}>
+            <NavLink
+              key={p.path}
+              to={p.path}
+              end={p.path === '/'}
+              className={({ isActive }) =>
+                cn(
+                  buttonVariants({ variant: isActive ? 'secondary' : 'ghost' }),
+                  'justify-start'
+                )}
+            >
               {p.label}
             </NavLink>
           ))}
         </nav>
-        <p className='identity'>
-          {user.data.name}
-          <small>{user.data.streamer ? 'Streamer' : 'Moderador'}</small>
-        </p>
+        <Separator />
+        <div className='identity'>
+          <p className='font-medium'>{user.data.name}</p>
+          <p className='text-sm text-muted-foreground'>
+            {user.data.streamer ? 'Streamer' : 'Moderador'}
+          </p>
+        </div>
         <Action
           path='auth/logout'
           method='POST'
@@ -99,11 +205,15 @@ export function Dashboard () {
       <main id='contenido' tabIndex={-1}>
         {snapshot.isPending
           ? (
-              <p role='status'>Cargando canal…</p>
+              <p role='status' className='text-muted-foreground'>
+                Cargando canal…
+              </p>
             )
           : snapshot.isError
             ? (
-                <p role='alert'>{snapshot.error.message}</p>
+                <Alert variant='destructive'>
+                  <AlertDescription>{snapshot.error.message}</AlertDescription>
+                </Alert>
               )
             : (
                 <Outlet
@@ -121,6 +231,7 @@ function Action ({
   method = 'POST',
   data,
   csrf,
+  variant = 'outline',
   children,
   onSuccess
 }: {
@@ -128,6 +239,7 @@ function Action ({
   method?: string
   data?: unknown
   csrf: string
+  variant?: 'outline' | 'destructive' | 'default' | 'secondary'
   children: ReactNode
   onSuccess?: () => void
 }) {
@@ -140,17 +252,20 @@ function Action ({
     }
   })
   return (
-    <span className='action'>
-      <button
+    <span className='inline-flex flex-col gap-2'>
+      <Button
         type='button'
+        variant={variant}
         disabled={mutation.isPending}
         onClick={() => mutation.mutate()}
       >
         {children}
-      </button>
+      </Button>
       {mutation.isError
         ? (
-            <span role='alert'>{mutation.error.message}</span>
+            <span role='alert' className='text-sm text-destructive'>
+              {mutation.error.message}
+            </span>
           )
         : null}
     </span>
@@ -205,89 +320,146 @@ function Form ({
     )
   }
   return (
-    <form
-      action={`/api/${path}`}
-      method='post'
-      aria-labelledby={`${id}-title`}
-      onSubmit={submit}
-      className='card form'
-    >
-      <h2 id={`${id}-title`}>{title}</h2>
-      {fields.map((field) => (
-        <div className='field' key={field.name}>
-          <label htmlFor={`${id}-${field.name}`}>
-            {field.label}
-            {field.required !== false ? ' *' : ''}
-          </label>
-          {field.multiline
-            ? (
-                <textarea
-                  id={`${id}-${field.name}`}
-                  name={field.name}
-                  defaultValue={field.value}
-                  maxLength={field.max}
-                  required={field.required !== false}
-                  aria-describedby={
-                    field.help ? `${id}-${field.name}-help` : undefined
-                  }
-                  rows={4}
-                />
+    <Card className='form'>
+      <form
+        action={`/api/${path}`}
+        method='post'
+        aria-labelledby={`${id}-title`}
+        onSubmit={submit}
+        className='flex flex-col gap-(--card-spacing)'
+      >
+        <CardHeader>
+          <CardTitle>
+            <h2 id={`${id}-title`}>{title}</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            {fields.map((field) => {
+              const control = `${id}-${field.name}`
+              const help = field.help ? `${control}-help` : undefined
+              return (
+                <Field key={field.name}>
+                  <FieldLabel htmlFor={control}>
+                    {field.label}
+                    {field.required !== false ? ' *' : ''}
+                  </FieldLabel>
+                  {field.multiline
+                    ? (
+                        <Textarea
+                          id={control}
+                          name={field.name}
+                          defaultValue={field.value}
+                          maxLength={field.max}
+                          required={field.required !== false}
+                          aria-describedby={help}
+                          rows={4}
+                        />
+                      )
+                    : (
+                        <Input
+                          id={control}
+                          name={field.name}
+                          type={field.type ?? 'text'}
+                          defaultValue={field.value}
+                          required={field.required !== false}
+                          maxLength={
+                            field.type === 'number' ? undefined : field.max
+                          }
+                          max={field.type === 'number' ? field.max : undefined}
+                          min={field.min}
+                          aria-describedby={help}
+                        />
+                      )}
+                  {help
+                    ? (
+                        <FieldDescription id={help}>{field.help}</FieldDescription>
+                      )
+                    : null}
+                </Field>
               )
-            : (
-                <input
-                  id={`${id}-${field.name}`}
-                  name={field.name}
-                  type={field.type ?? 'text'}
-                  defaultValue={field.value}
-                  required={field.required !== false}
-                  maxLength={field.type === 'number' ? undefined : field.max}
-                  max={field.type === 'number' ? field.max : undefined}
-                  min={field.min}
-                  aria-describedby={
-                    field.help ? `${id}-${field.name}-help` : undefined
-                  }
-                />
-              )}
-          {field.help
-            ? (
-                <small id={`${id}-${field.name}-help`}>{field.help}</small>
-              )
-            : null}
-        </div>
-      ))}
-      {children}
-      <div className='buttons'>
-        <button className='primary' type='submit' disabled={mutation.isPending}>
-          {mutation.isPending ? 'Guardando…' : 'Guardar'}
-        </button>
-      </div>
-      <p role={mutation.isError ? 'alert' : 'status'}>
-        {mutation.isError
-          ? mutation.error.message
-          : saved
-            ? 'Cambios guardados.'
-            : ''}
-      </p>
-    </form>
+            })}
+            {children}
+          </FieldGroup>
+        </CardContent>
+        <CardFooter className='flex-wrap gap-4'>
+          <Button type='submit' size='lg' disabled={mutation.isPending}>
+            {mutation.isPending ? 'Guardando…' : 'Guardar'}
+          </Button>
+          <p
+            role={mutation.isError ? 'alert' : 'status'}
+            className={cn(
+              'text-sm',
+              mutation.isError ? 'text-destructive' : 'text-muted-foreground'
+            )}
+          >
+            {mutation.isError
+              ? mutation.error.message
+              : saved
+                ? 'Cambios guardados.'
+                : ''}
+          </p>
+        </CardFooter>
+      </form>
+    </Card>
+  )
+}
+function Choice ({
+  id,
+  label,
+  options,
+  defaultValue
+}: {
+  id: string
+  label: string
+  options: { value: string, label: string }[]
+  defaultValue: string
+}) {
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select name={id} defaultValue={defaultValue}>
+        <SelectTrigger id={id} className='w-full'>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {options.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </Field>
+  )
+}
+function Toggle ({
+  name,
+  label,
+  checked
+}: {
+  name: string
+  label: string
+  checked: boolean
+}) {
+  return (
+    <Field orientation='horizontal'>
+      <Checkbox id={name} name={name} defaultChecked={checked} />
+      <FieldLabel htmlFor={name} className='font-normal'>
+        {label}
+      </FieldLabel>
+    </Field>
   )
 }
 function Brand () {
-  const [failed, setFailed] = useState(false)
   return (
     <a className='brand' href='/'>
-      {failed
-        ? (
-            'L'
-          )
-        : (
-            <img
-              src='/api/branding/avatar'
-              alt=''
-              width={40}
-              height={40}
-              onError={() => setFailed(true)}
-            />
-          )}
+      <Avatar className='size-10'>
+        <AvatarImage src='/api/branding/avatar' alt='' />
+        <AvatarFallback>L</AvatarFallback>
+      </Avatar>
       <span>LongiBot</span>
     </a>
   )
@@ -300,15 +472,51 @@ function Heading ({
   description: string
 }) {
   return (
-    <header>
+    <header className='flex flex-col gap-2'>
       <p className='eyebrow'>Centro de control</p>
-      <h1>{title}</h1>
-      <p>{description}</p>
+      <h1 className='text-3xl font-semibold tracking-tight'>{title}</h1>
+      <p className='max-w-3xl text-muted-foreground'>{description}</p>
     </header>
   )
 }
+function Section ({
+  title,
+  children
+}: {
+  title: string
+  children: ReactNode
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h2>{title}</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className='flex flex-col gap-3'>{children}</CardContent>
+    </Card>
+  )
+}
+function List ({ children }: { children: ReactNode[] }) {
+  return (
+    <div className='flex flex-col gap-4'>
+      {children.map((child, i) => (
+        <Fragment key={i}>
+          {i > 0 ? <Separator /> : null}
+          {child}
+        </Fragment>
+      ))}
+    </div>
+  )
+}
 function Empty ({ children }: { children: ReactNode }) {
-  return <p className='empty'>{children}</p>
+  return (
+    <EmptyState>
+      <EmptyHeader>
+        <EmptyDescription>{children}</EmptyDescription>
+      </EmptyHeader>
+    </EmptyState>
+  )
 }
 function Summary () {
   const {
@@ -323,55 +531,69 @@ function Summary () {
         description={`Administración de #${channel}. Las actualizaciones se reciben automáticamente.`}
       />
       <div className='stats'>
-        <article className='card'>
-          <small>Canal</small>
-          <h2>{s.live ? 'En directo' : 'Sin directo'}</h2>
-        </article>
-        <article className='card'>
-          <small>Partida</small>
-          <h2>
-            {s.tracking === 'active'
-              ? 'En juego'
-              : s.tracking === 'unknown'
-                ? 'Por confirmar'
-                : 'Sin partida'}
-          </h2>
-          <p>{active?.id ?? 'Esperando señal de Riot'}</p>
-        </article>
-        <article className='card'>
-          <small>Recordatorios pendientes</small>
-          <h2>
-            {
-              Object.values(s.reminders).filter(
-                (r) => !['sent', 'canceled'].includes(r.status)
-              ).length
-            }
-          </h2>
-        </article>
+        <Card>
+          <CardHeader>
+            <CardDescription>Canal</CardDescription>
+            <CardTitle className='text-2xl'>
+              <h2>{s.live ? 'En directo' : 'Sin directo'}</h2>
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Partida</CardDescription>
+            <CardTitle className='text-2xl'>
+              <h2>
+                {s.tracking === 'active'
+                  ? 'En juego'
+                  : s.tracking === 'unknown'
+                    ? 'Por confirmar'
+                    : 'Sin partida'}
+              </h2>
+            </CardTitle>
+            <CardDescription>
+              {active?.id ?? 'Esperando señal de Riot'}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Recordatorios pendientes</CardDescription>
+            <CardTitle className='text-2xl'>
+              <h2>
+                {
+                  Object.values(s.reminders).filter(
+                    (r) => !['sent', 'canceled'].includes(r.status)
+                  ).length
+                }
+              </h2>
+            </CardTitle>
+          </CardHeader>
+        </Card>
       </div>
-      <section className='card'>
-        <h2>Conexiones de Twitch</h2>
-        <p>
+      <Section title='Conexiones de Twitch'>
+        <p className='text-muted-foreground'>
           El bot y el broadcaster se autorizan por separado. El consentimiento
           se guarda protegido en el servidor.
         </p>
         {user.streamer
           ? (
-              <div className='buttons'>
-                <a className='button' href='/api/auth/twitch?purpose=broadcaster'>
-                  Conectar broadcaster
-                </a>
-                <a className='button' href='/api/auth/twitch?purpose=bot'>
-                  Conectar bot
-                </a>
+              <div className='flex flex-wrap gap-3'>
+                <Button asChild variant='outline' size='lg'>
+                  <a href='/api/auth/twitch?purpose=broadcaster'>
+                    Conectar broadcaster
+                  </a>
+                </Button>
+                <Button asChild variant='outline' size='lg'>
+                  <a href='/api/auth/twitch?purpose=bot'>Conectar bot</a>
+                </Button>
               </div>
             )
           : (
               <p>El streamer debe conectar ambas cuentas.</p>
             )}
-      </section>
-      <section className='card'>
-        <h2>Últimas partidas</h2>
+      </Section>
+      <Section title='Últimas partidas'>
         {Object.values(s.games)
           .reverse()
           .slice(0, 20)
@@ -381,7 +603,7 @@ function Summary () {
               {g.historic ? ' · recuperada' : ''}
             </p>
           ))}
-      </section>
+      </Section>
     </>
   )
 }
@@ -410,45 +632,47 @@ function Reminders () {
           }
         ]}
       />
-      <section className='card'>
-        <h2>Cola de entrega</h2>
+      <Section title='Cola de entrega'>
         {Object.values(s.reminders).length
           ? (
-              Object.values(s.reminders).map((r) => (
-                <article className='row' key={r.id}>
-                  <div>
-                    <strong>{r.text}</strong>
-                    <p>
-                      {r.author} · {date(r.createdAt)}
-                    </p>
-                    <small>
-                      {r.status} · {r.gameId ?? 'esperando asignación'} · intentos:{' '}
-                      {r.attempts}
-                    </small>
-                    <small>ID: {r.id}</small>
-                  </div>
-                  {[
-                    'waiting_next_game',
-                    'awaiting_game_assignment',
-                    'queued'
-                  ].includes(r.status)
-                    ? (
-                        <Action
-                          path={`admin/reminders/${encodeURIComponent(r.id)}`}
-                          method='DELETE'
-                          csrf={user.csrf}
-                        >
-                          Cancelar recordatorio
-                        </Action>
-                      )
-                    : null}
-                </article>
-              ))
+              <List>
+                {Object.values(s.reminders).map((r) => (
+                  <article className='row' key={r.id}>
+                    <div className='min-w-0'>
+                      <strong>{r.text}</strong>
+                      <p>
+                        {r.author} · {date(r.createdAt)}
+                      </p>
+                      <p className='text-sm text-muted-foreground'>
+                        {r.status} · {r.gameId ?? 'esperando asignación'} ·
+                        intentos: {r.attempts}
+                      </p>
+                      <p className='text-sm text-muted-foreground'>ID: {r.id}</p>
+                    </div>
+                    {[
+                      'waiting_next_game',
+                      'awaiting_game_assignment',
+                      'queued'
+                    ].includes(r.status)
+                      ? (
+                          <Action
+                            path={`admin/reminders/${encodeURIComponent(r.id)}`}
+                            method='DELETE'
+                            variant='destructive'
+                            csrf={user.csrf}
+                          >
+                            Cancelar recordatorio
+                          </Action>
+                        )
+                      : null}
+                  </article>
+                ))}
+              </List>
             )
           : (
               <Empty>No hay recordatorios todavía.</Empty>
             )}
-      </section>
+      </Section>
     </>
   )
 }
@@ -463,72 +687,74 @@ function Predictions () {
         title='Predictions'
         description='Participación durante 300 segundos. Victoria o derrota confirmada resuelve; remake confirmado cancela y devuelve los puntos en Twitch.'
       />
-      <section className='card'>
-        <h2>Historial y controles</h2>
+      <Section title='Historial y controles'>
         {Object.values(s.predictions).length
           ? (
-              Object.values(s.predictions)
-                .reverse()
-                .map((p) => (
-                  <article key={p.gameId} className='prediction'>
-                    <h3>{p.gameId}</h3>
-                    <p>
-                      {p.status} · {p.twitchId ?? 'sin ID de Twitch'}
-                    </p>
-                    {p.reason ? <p>{p.reason}</p> : null}
-                    {p.twitchId && !['RESOLVED', 'CANCELED'].includes(p.status)
-                      ? (
-                          <div className='buttons'>
-                            <Action
-                              path={`admin/predictions/${p.gameId}`}
-                              data={{ status: 'LOCKED' }}
-                              csrf={user.csrf}
-                            >
-                              Bloquear
-                            </Action>
-                            <Action
-                              path={`admin/predictions/${p.gameId}`}
-                              data={{ status: 'CANCELED' }}
-                              csrf={user.csrf}
-                            >
-                              Cancelar prediction y reembolsar
-                            </Action>
-                            {p.outcomes?.map((o) => (
+              <List>
+                {Object.values(s.predictions)
+                  .reverse()
+                  .map((p) => (
+                    <article key={p.gameId} className='flex flex-col gap-3'>
+                      <h3 className='font-medium'>{p.gameId}</h3>
+                      <p className='text-muted-foreground'>
+                        {p.status} · {p.twitchId ?? 'sin ID de Twitch'}
+                      </p>
+                      {p.reason ? <p>{p.reason}</p> : null}
+                      {p.twitchId && !['RESOLVED', 'CANCELED'].includes(p.status)
+                        ? (
+                            <div className='flex flex-wrap gap-3'>
                               <Action
-                                key={o.id}
                                 path={`admin/predictions/${p.gameId}`}
-                                data={{ status: 'RESOLVED', outcome: o.id }}
+                                data={{ status: 'LOCKED' }}
                                 csrf={user.csrf}
                               >
-                                Resolver: {o.title}
+                                Bloquear
                               </Action>
-                            ))}
-                          </div>
-                        )
-                      : null}
-                    {p.status === 'creation_unknown'
-                      ? (
-                          <Form
-                            title='Vincular creación incierta'
-                            path={`admin/predictions/${p.gameId}/link`}
-                            csrf={user.csrf}
-                            fields={[
-                              {
-                                name: 'twitchId',
-                                label: 'ID de la prediction verificada en Twitch',
-                                max: 100
-                              }
-                            ]}
-                          />
-                        )
-                      : null}
-                  </article>
-                ))
+                              <Action
+                                path={`admin/predictions/${p.gameId}`}
+                                data={{ status: 'CANCELED' }}
+                                variant='destructive'
+                                csrf={user.csrf}
+                              >
+                                Cancelar prediction y reembolsar
+                              </Action>
+                              {p.outcomes?.map((o) => (
+                                <Action
+                                  key={o.id}
+                                  path={`admin/predictions/${p.gameId}`}
+                                  data={{ status: 'RESOLVED', outcome: o.id }}
+                                  csrf={user.csrf}
+                                >
+                                  Resolver: {o.title}
+                                </Action>
+                              ))}
+                            </div>
+                          )
+                        : null}
+                      {p.status === 'creation_unknown'
+                        ? (
+                            <Form
+                              title='Vincular creación incierta'
+                              path={`admin/predictions/${p.gameId}/link`}
+                              csrf={user.csrf}
+                              fields={[
+                                {
+                                  name: 'twitchId',
+                                  label: 'ID de la prediction verificada en Twitch',
+                                  max: 100
+                                }
+                              ]}
+                            />
+                          )
+                        : null}
+                    </article>
+                  ))}
+              </List>
             )
           : (
               <Empty>La próxima partida elegible abrirá una prediction.</Empty>
             )}
-      </section>
+      </Section>
     </>
   )
 }
@@ -572,57 +798,52 @@ function Events () {
           ]
         })}
       >
-        <div className='field'>
-          <label htmlFor='event-type'>Evento</label>
-          <select id='event-type' name='event'>
-            {[
-              'twitch.redemption.created.v1',
-              'twitch.redemption.updated.v1',
-              'twitch.automatic_reward.redeemed.v1',
-              'twitch.bits.used.v1',
-              'twitch.message.highlighted.v1',
-              'twitch.subscription.started.v1',
-              'twitch.subscription.message.v1',
-              'twitch.subscriptions.gifted.v1',
-              'twitch.followed.v1'
-            ].map((e) => (
-              <option key={e}>{e}</option>
-            ))}
-          </select>
-        </div>
+        <Choice
+          id='event'
+          label='Evento'
+          defaultValue='twitch.redemption.created.v1'
+          options={Object.entries(eventLabels).map(([value, label]) => ({
+            value,
+            label
+          }))}
+        />
       </Form>
-      <section className='card'>
-        <h2>Reglas configuradas</h2>
+      <Section title='Reglas configuradas'>
         {s.settings.actions.length
           ? (
-              s.settings.actions.map((rule) => (
-                <div className='row' key={rule.id}>
-                  <div>
-                    <strong>{rule.id}</strong>
-                    <p>
-                      {rule.event} · {rule.text}
-                    </p>
+              <List>
+                {s.settings.actions.map((rule) => (
+                  <div className='row' key={rule.id}>
+                    <div className='min-w-0'>
+                      <strong>{rule.id}</strong>
+                      <p className='text-muted-foreground'>
+                        {eventLabels[rule.event] ?? rule.event} · {rule.text}
+                      </p>
+                    </div>
+                    <Action
+                      path='admin/settings'
+                      method='PUT'
+                      variant='destructive'
+                      data={{
+                        ...s.settings,
+                        actions: s.settings.actions.filter(
+                          (r) => r.id !== rule.id
+                        )
+                      }}
+                      csrf={user.csrf}
+                    >
+                      Eliminar regla
+                    </Action>
                   </div>
-                  <Action
-                    path='admin/settings'
-                    method='PUT'
-                    data={{
-                      ...s.settings,
-                      actions: s.settings.actions.filter((r) => r.id !== rule.id)
-                    }}
-                    csrf={user.csrf}
-                  >
-                    Eliminar regla
-                  </Action>
-                </div>
-              ))
+                ))}
+              </List>
             )
           : (
               <Empty>
                 No se ejecutan respuestas automáticas hasta agregar una regla.
               </Empty>
             )}
-      </section>
+      </Section>
     </>
   )
 }
@@ -653,47 +874,18 @@ function Features () {
         ]}
         transform={(d) => ({ ...d, platform: d.platform, region: d.region })}
       >
-        <div className='field'>
-          <label htmlFor='platform'>Plataforma</label>
-          <select
-            id='platform'
-            name='platform'
-            defaultValue={s.account?.platform ?? 'la2'}
-          >
-            {[
-              'la1',
-              'la2',
-              'na1',
-              'br1',
-              'euw1',
-              'eun1',
-              'kr',
-              'jp1',
-              'oc1',
-              'tr1',
-              'ru',
-              'ph2',
-              'sg2',
-              'th2',
-              'tw2',
-              'vn2'
-            ].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-        <div className='field'>
-          <label htmlFor='region'>Routing regional</label>
-          <select
-            id='region'
-            name='region'
-            defaultValue={s.account?.region ?? 'americas'}
-          >
-            {['americas', 'europe', 'asia', 'sea'].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </div>
+        <Choice
+          id='platform'
+          label='Plataforma'
+          defaultValue={s.account?.platform ?? 'la2'}
+          options={platforms.map((p) => ({ value: p, label: p }))}
+        />
+        <Choice
+          id='region'
+          label='Routing regional'
+          defaultValue={s.account?.region ?? 'americas'}
+          options={regions.map((r) => ({ value: r, label: r }))}
+        />
       </Form>
       <Form
         title='Configuración de módulos'
@@ -735,123 +927,125 @@ function Features () {
             }
           }) satisfies Settings}
       >
-        <fieldset>
-          <legend>Activación</legend>
-          {[
-            ['trivia', 'Trivia', settings.trivia.enabled],
-            ['stories', 'Historias', settings.stories.enabled],
-            ['predictions', 'Predictions', settings.predictions.enabled],
-            ['tracking', 'Seguimiento Riot', settings.tracking.enabled],
-            ['live', 'Seguir solo durante directo', settings.tracking.onlyLive]
-          ].map(([name, label, enabled]) => (
-            <div className='check' key={String(name)}>
-              <input
-                id={String(name)}
-                name={String(name)}
-                type='checkbox'
-                defaultChecked={Boolean(enabled)}
-              />
-              <label htmlFor={String(name)}>{label}</label>
-            </div>
-          ))}
-        </fieldset>
-        <fieldset>
-          <legend>Predictions</legend>
-          <div className='check field'>
-            <input
-              id='auto'
+        <FieldSet>
+          <FieldLegend>Activación</FieldLegend>
+          <FieldGroup data-slot='checkbox-group'>
+            {(
+              [
+                ['trivia', 'Trivia', settings.trivia.enabled],
+                ['stories', 'Historias', settings.stories.enabled],
+                ['predictions', 'Predictions', settings.predictions.enabled],
+                ['tracking', 'Seguimiento Riot', settings.tracking.enabled],
+                [
+                  'live',
+                  'Seguir solo durante directo',
+                  settings.tracking.onlyLive
+                ]
+              ] as const
+            ).map(([name, label, enabled]) => (
+              <Toggle key={name} name={name} label={label} checked={enabled} />
+            ))}
+          </FieldGroup>
+        </FieldSet>
+        <Separator />
+        <FieldSet>
+          <FieldLegend>Predictions</FieldLegend>
+          <FieldGroup>
+            <Toggle
               name='auto'
-              type='checkbox'
-              defaultChecked={settings.predictions.autoResolve}
+              label='Resolver automáticamente; cancelar remakes'
+              checked={settings.predictions.autoResolve}
             />
-            <label htmlFor='auto'>
-              Resolver automáticamente; cancelar remakes
-            </label>
-          </div>
-          {[
-            ['title', 'Pregunta', settings.predictions.title, 45],
-            ['yes', 'Opción de victoria', settings.predictions.yes, 25],
-            ['no', 'Opción de derrota', settings.predictions.no, 25]
-          ].map(([name, label, value, max]) => (
-            <div className='field' key={name}>
-              <label htmlFor={String(name)}>{label}</label>
-              <input
-                id={String(name)}
-                name={String(name)}
-                defaultValue={String(value)}
-                maxLength={Number(max)}
-                required
+            {(
+              [
+                ['title', 'Pregunta', settings.predictions.title, 45],
+                ['yes', 'Opción de victoria', settings.predictions.yes, 25],
+                ['no', 'Opción de derrota', settings.predictions.no, 25]
+              ] as const
+            ).map(([name, label, value, max]) => (
+              <Field key={name}>
+                <FieldLabel htmlFor={name}>{label}</FieldLabel>
+                <Input
+                  id={name}
+                  name={name}
+                  defaultValue={value}
+                  maxLength={max}
+                  required
+                />
+              </Field>
+            ))}
+            <Numeric
+              name='age'
+              label='Antigüedad máxima al crear (segundos)'
+              value={settings.predictions.maxAgeSeconds}
+              min={1}
+              max={300}
+            />
+          </FieldGroup>
+        </FieldSet>
+        <Separator />
+        <FieldSet>
+          <FieldLegend>Seguimiento y juegos</FieldLegend>
+          <FieldGroup>
+            <Numeric
+              name='poll'
+              label='Intervalo Riot (segundos)'
+              value={settings.tracking.pollSeconds}
+              min={30}
+              max={60}
+            />
+            <Field>
+              <FieldLabel htmlFor='queues'>
+                Colas habilitadas (vacío: todas las detectables)
+              </FieldLabel>
+              <Input
+                id='queues'
+                name='queues'
+                defaultValue={settings.tracking.queues.join(',')}
+                pattern='[0-9, ]*'
               />
-            </div>
-          ))}
-          <Numeric
-            name='age'
-            label='Antigüedad máxima al crear (segundos)'
-            value={settings.predictions.maxAgeSeconds}
-            min={1}
-            max={300}
-          />
-        </fieldset>
-        <fieldset>
-          <legend>Seguimiento y juegos</legend>
-          <Numeric
-            name='poll'
-            label='Intervalo Riot (segundos)'
-            value={settings.tracking.pollSeconds}
-            min={30}
-            max={60}
-          />
-          <div className='field'>
-            <label htmlFor='queues'>
-              Colas habilitadas (vacío: todas las detectables)
-            </label>
-            <input
-              id='queues'
-              name='queues'
-              defaultValue={settings.tracking.queues.join(',')}
-              pattern='[0-9, ]*'
+            </Field>
+            <Numeric
+              name='interval'
+              label='Intervalo de trivia (minutos)'
+              value={settings.trivia.intervalMinutes}
+              min={1}
+              max={1440}
             />
-          </div>
-          <Numeric
-            name='interval'
-            label='Intervalo de trivia (minutos)'
-            value={settings.trivia.intervalMinutes}
-            min={1}
-            max={1440}
-          />
-          <Numeric
-            name='answer'
-            label='Tiempo para responder (segundos)'
-            value={settings.trivia.answerSeconds}
-            min={10}
-            max={600}
-          />
-          <Numeric
-            name='global'
-            label='Cooldown global de historias (segundos)'
-            value={settings.stories.globalSeconds}
-            min={0}
-            max={86400}
-          />
-          <Numeric
-            name='actor'
-            label='Cooldown del ejecutor (segundos)'
-            value={settings.stories.actorSeconds}
-            min={0}
-            max={86400}
-          />
-          <Numeric
-            name='guest'
-            label='Cooldown del invitado (segundos)'
-            value={settings.stories.guestSeconds}
-            min={0}
-            max={86400}
-          />
-        </fieldset>
-        <p>
+            <Numeric
+              name='answer'
+              label='Tiempo para responder (segundos)'
+              value={settings.trivia.answerSeconds}
+              min={10}
+              max={600}
+            />
+            <Numeric
+              name='global'
+              label='Cooldown global de historias (segundos)'
+              value={settings.stories.globalSeconds}
+              min={0}
+              max={86400}
+            />
+            <Numeric
+              name='actor'
+              label='Cooldown del ejecutor (segundos)'
+              value={settings.stories.actorSeconds}
+              min={0}
+              max={86400}
+            />
+            <Numeric
+              name='guest'
+              label='Cooldown del invitado (segundos)'
+              value={settings.stories.guestSeconds}
+              min={0}
+              max={86400}
+            />
+          </FieldGroup>
+        </FieldSet>
+        <FieldDescription>
           Las historias no aplican timeouts reales. Las victorias empiezan en
           cero.
-        </p>
+        </FieldDescription>
       </Form>
     </>
   )
@@ -870,9 +1064,9 @@ function Numeric ({
   max: number
 }) {
   return (
-    <div className='field'>
-      <label htmlFor={name}>{label}</label>
-      <input
+    <Field>
+      <FieldLabel htmlFor={name}>{label}</FieldLabel>
+      <Input
         id={name}
         name={name}
         type='number'
@@ -881,7 +1075,7 @@ function Numeric ({
         max={max}
         required
       />
-    </div>
+    </Field>
   )
 }
 function Games () {
@@ -889,6 +1083,7 @@ function Games () {
     user,
     snapshot: { state: s }
   } = useDashboard()
+  const questions = Object.values(s.questions)
   return (
     <>
       <Heading
@@ -915,90 +1110,100 @@ function Games () {
             .filter(Boolean)
         })}
       />
-      <section className='card'>
-        <h2>Banco de preguntas</h2>
-        {Object.values(s.questions).map((q) => (
-          <div className='row' key={q.id}>
-            <div>
-              <strong>{q.text}</strong>
-              <p>
-                {q.answers.join(' · ')} · usada {q.used} veces
-              </p>
-              <details>
-                <summary>Editar pregunta</summary>
-                <Form
-                  title='Editar pregunta'
-                  path={`admin/questions/${q.id}`}
-                  method='PUT'
-                  csrf={user.csrf}
-                  fields={[
-                    {
-                      name: 'text',
-                      label: 'Pregunta',
-                      value: q.text,
-                      max: 400
-                    },
-                    {
-                      name: 'answers',
-                      label: 'Respuestas alternativas',
-                      value: q.answers.join(';'),
-                      max: 4000
-                    }
-                  ]}
-                  transform={(d) => ({
-                    text: d.text!,
-                    answers: d
-                      .answers!.split(';')
-                      .map((a) => a.trim())
-                      .filter(Boolean)
-                  })}
-                />
-              </details>
-            </div>
-            <Action
-              path={`admin/questions/${q.id}`}
-              method='DELETE'
-              csrf={user.csrf}
-            >
-              Eliminar pregunta
-            </Action>
-          </div>
-        ))}
-      </section>
-      <section className='card'>
-        <h2>Victorias</h2>
+      <Section title='Banco de preguntas'>
+        {questions.length
+          ? (
+              <List>
+                {questions.map((q) => (
+                  <Collapsible key={q.id} className='flex flex-col gap-3'>
+                    <div className='row'>
+                      <div className='min-w-0'>
+                        <strong>{q.text}</strong>
+                        <p className='text-muted-foreground'>
+                          {q.answers.join(' · ')} · usada {q.used} veces
+                        </p>
+                      </div>
+                      <div className='flex flex-wrap gap-3'>
+                        <CollapsibleTrigger asChild>
+                          <Button variant='outline'>Editar pregunta</Button>
+                        </CollapsibleTrigger>
+                        <Action
+                          path={`admin/questions/${q.id}`}
+                          method='DELETE'
+                          variant='destructive'
+                          csrf={user.csrf}
+                        >
+                          Eliminar pregunta
+                        </Action>
+                      </div>
+                    </div>
+                    <CollapsibleContent>
+                      <Form
+                        title='Editar pregunta'
+                        path={`admin/questions/${q.id}`}
+                        method='PUT'
+                        csrf={user.csrf}
+                        fields={[
+                          {
+                            name: 'text',
+                            label: 'Pregunta',
+                            value: q.text,
+                            max: 400
+                          },
+                          {
+                            name: 'answers',
+                            label: 'Respuestas alternativas',
+                            value: q.answers.join(';'),
+                            max: 4000
+                          }
+                        ]}
+                        transform={(d) => ({
+                          text: d.text!,
+                          answers: d
+                            .answers!.split(';')
+                            .map((a) => a.trim())
+                            .filter(Boolean)
+                        })}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))}
+              </List>
+            )
+          : (
+              <Empty>Todavía no hay preguntas en el banco.</Empty>
+            )}
+      </Section>
+      <Section title='Victorias'>
         {Object.entries(s.wins).length
           ? (
-              <div className='table-wrap'>
-                <table>
-                  <caption>Contadores por usuario y juego</caption>
-                  <thead>
-                    <tr>
-                      <th>Usuario</th>
-                      <th>Trivia</th>
-                      <th>Historias</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(s.wins).map(([id, w]) => (
-                      <tr key={id}>
-                        <th scope='row'>{w.name}</th>
-                        <td>{w.trivia}</td>
-                        <td>{w.stories}</td>
-                        <td>{w.trivia + w.stories}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableCaption>Contadores por usuario y juego</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Usuario</TableHead>
+                    <TableHead>Trivia</TableHead>
+                    <TableHead>Historias</TableHead>
+                    <TableHead>Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Object.entries(s.wins).map(([id, w]) => (
+                    <TableRow key={id}>
+                      <TableHead scope='row'>{w.name}</TableHead>
+                      <TableCell>{w.trivia}</TableCell>
+                      <TableCell>{w.stories}</TableCell>
+                      <TableCell>{w.trivia + w.stories}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )
           : (
               <Empty>Todavía no hay victorias.</Empty>
             )}
-      </section>
-      <section className='card'>
-        <h2>Últimas historias</h2>
+      </Section>
+      <Section title='Últimas historias'>
         {Object.values(s.stories)
           .reverse()
           .slice(0, 20)
@@ -1008,7 +1213,7 @@ function Games () {
               ganadores
             </p>
           ))}
-      </section>
+      </Section>
     </>
   )
 }
@@ -1022,21 +1227,27 @@ function Operation () {
     queryFn: ({ signal }) => api<Operations>('admin/operations', { signal }),
     refetchInterval: 10_000
   })
+  const uncertain = Object.values(s.messages).filter(
+    (m) => m.status === 'unknown'
+  )
   return (
     <>
       <Heading
         title='Operación y auditoría'
         description='Estado de conexiones, entregas y acciones administrativas. Los secretos permanecen en el servidor.'
       />
-      <section className='card'>
-        <h2>Worker y autorizaciones</h2>
+      <Section title='Worker y autorizaciones'>
         {ops.isPending
           ? (
-              <p role='status'>Cargando operación…</p>
+              <p role='status' className='text-muted-foreground'>
+                Cargando operación…
+              </p>
             )
           : ops.isError
             ? (
-                <p role='alert'>{ops.error.message}</p>
+                <Alert variant='destructive'>
+                  <AlertDescription>{ops.error.message}</AlertDescription>
+                </Alert>
               )
             : (
                 <>
@@ -1049,21 +1260,32 @@ function Operation () {
                       {c.purpose} · usuario {c.user_id} · {c.updated_at}
                     </p>
                   ))}
-                  <h3>Entregas pendientes</h3>
+                  <Separator />
+                  <h3 className='font-medium'>Entregas pendientes</h3>
                   {ops.data.deliveries
                     .filter((d) => !d.completed_at)
                     .map((d) => (
                       <p key={`${d.event_id}:${d.consumer}`}>
-                        {d.consumer} · {d.event_id} · intentos {d.attempts ?? 0}{d.last_error ? ` · ${d.last_error}` : ''}
+                        {d.consumer} · {d.event_id} · intentos {d.attempts ?? 0}
+                        {d.last_error ? ` · ${d.last_error}` : ''}
                       </p>
                     ))}
-                  <h3>Jobs fallidos</h3>{ops.data.failedJobs?.map(job => <p key={job.id}>{job.name} · {job.created_on} · intentos {job.retry_count}</p>)}<h3>Auditoría reciente</h3>
+                  <Separator />
+                  <h3 className='font-medium'>Jobs fallidos</h3>
+                  {ops.data.failedJobs?.map((job) => (
+                    <p key={job.id}>
+                      {job.name} · {job.created_on} · intentos {job.retry_count}
+                    </p>
+                  ))}
+                  <Separator />
+                  <h3 className='font-medium'>Auditoría reciente</h3>
                   {ops.data.audit.map((a, i) => (
                     <p key={i}>
                       {a.at} · {a.user_id} · {a.action}
                     </p>
                   ))}
-                  <h3>Eventos recibidos</h3>
+                  <Separator />
+                  <h3 className='font-medium'>Eventos recibidos</h3>
                   {ops.data.events.map((e) => (
                     <p key={e.data.id}>
                       {e.data.type} · {e.received_at}
@@ -1071,35 +1293,39 @@ function Operation () {
                   ))}
                 </>
               )}
-      </section>
-      <section className='card'>
-        <h2>Entregas inciertas</h2>
-        {Object.values(s.messages)
-          .filter((m) => m.status === 'unknown')
-          .map((m) => (
-            <article className='row' key={m.id}>
-              <p>{m.text}</p>
-              <div className='buttons'>
-                <Action
-                  path={`admin/messages/${encodeURIComponent(m.id)}/review`}
-                  data={{ decision: 'sent' }}
-                  csrf={user.csrf}
-                >
-                  Marcar como enviado
-                </Action>
-                <Action
-                  path={`admin/messages/${encodeURIComponent(m.id)}/review`}
-                  data={{ decision: 'retry' }}
-                  csrf={user.csrf}
-                >
-                  Reenviar tras verificar
-                </Action>
-              </div>
-            </article>
-          ))}
-      </section>
-      <section className='card'>
-        <h2>Errores recientes</h2>
+      </Section>
+      <Section title='Entregas inciertas'>
+        {uncertain.length
+          ? (
+              <List>
+                {uncertain.map((m) => (
+                  <article className='row' key={m.id}>
+                    <p className='min-w-0'>{m.text}</p>
+                    <div className='flex flex-wrap gap-3'>
+                      <Action
+                        path={`admin/messages/${encodeURIComponent(m.id)}/review`}
+                        data={{ decision: 'sent' }}
+                        csrf={user.csrf}
+                      >
+                        Marcar como enviado
+                      </Action>
+                      <Action
+                        path={`admin/messages/${encodeURIComponent(m.id)}/review`}
+                        data={{ decision: 'retry' }}
+                        csrf={user.csrf}
+                      >
+                        Reenviar tras verificar
+                      </Action>
+                    </div>
+                  </article>
+                ))}
+              </List>
+            )
+          : (
+              <Empty>No hay entregas pendientes de revisión.</Empty>
+            )}
+      </Section>
+      <Section title='Errores recientes'>
         {s.errors.length
           ? (
               s.errors
@@ -1114,7 +1340,7 @@ function Operation () {
           : (
               <Empty>Sin errores registrados.</Empty>
             )}
-      </section>
+      </Section>
     </>
   )
 }

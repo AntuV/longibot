@@ -9,6 +9,8 @@ import { api, ApiError } from '../../apps/dashboard/src/api.js'
 import { initialState } from '../../packages/features/src/model.js'
 import type { State } from '../../packages/features/src/model.js'
 
+// jsdom lacks ResizeObserver, which Radix primitives (Checkbox, Select) use for sizing.
+globalThis.ResizeObserver ??= class { observe () {} unobserve () {} disconnect () {} }
 let state: State
 let streamer: boolean
 let fetcher: ReturnType<typeof vi.fn<typeof fetch>>
@@ -123,7 +125,7 @@ describe('administration screens', () => {
     await userEvent.click(within(form).getByRole('button', { name: 'Guardar' }))
     await waitFor(() => expect(requests[0]?.body).toEqual({ text: 'New question?', answers: ['x', 'y'] }))
     expect(screen.getByRole('table').textContent).toContain('Winner235')
-    await userEvent.click(screen.getByText('Editar pregunta', { selector: 'summary' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Editar pregunta' }))
     const edit = screen.getByRole('form', { name: 'Editar pregunta' })
     await userEvent.click(within(edit).getByRole('button', { name: 'Guardar' }))
     await waitFor(() => expect(requests[1]?.path).toBe('/api/admin/questions/q'))
