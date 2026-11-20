@@ -972,22 +972,11 @@ function Summary () {
         <Section title='Cuentas de Twitch' className='span'>
           <p className='text-muted-foreground'>
             La cuenta del canal y la del bot se conectan por separado. Los
-            permisos quedan guardados en el servidor; el estado está en Operación.
+            permisos quedan guardados en el servidor.
           </p>
           {user.botManager
             ? (
-                <div className='flex flex-wrap gap-3'>
-                  {user.streamer && (
-                    <Button asChild variant='outline'>
-                      <a href='/api/auth/twitch?purpose=broadcaster'>
-                        Conectar cuenta del canal
-                      </a>
-                    </Button>
-                  )}
-                  <Button asChild variant='outline'>
-                    <a href='/api/auth/twitch?purpose=bot'>Conectar cuenta del bot</a>
-                  </Button>
-                </div>
+                <TwitchAccounts purposes={user.streamer ? ['broadcaster', 'bot'] : ['bot']} />
               )
             : (
                 <p>Solo el streamer puede conectar estas cuentas.</p>
@@ -1001,6 +990,44 @@ function Summary () {
         </Section>
       </div>
     </>
+  )
+}
+function TwitchAccounts ({ purposes }: { purposes: ('broadcaster' | 'bot')[] }) {
+  const ops = useQuery({
+    queryKey: ['operations'],
+    queryFn: ({ signal }) => api<Operations>('admin/operations', { signal })
+  })
+  const label = { broadcaster: 'cuenta del canal', bot: 'cuenta del bot' }
+  return (
+    <ul className='flex flex-col gap-3'>
+      {purposes.map((purpose) => {
+        const connection = ops.data?.connections
+          .filter((c) => c.purpose === purpose)
+          .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0]
+        return (
+          <li key={purpose} className='flex flex-wrap items-center gap-3'>
+            <span className='min-w-40 font-medium'>{connectionName(purpose)}</span>
+            {ops.isPending
+              ? <span role='status' className='text-sm text-muted-foreground'>Consultando…</span>
+              : connection
+                ? (
+                    <span className='text-sm text-muted-foreground'>
+                      <span className='state' data-tone='done'>Conectada</span>{' '}
+                      <time title={exactTime(connection.updated_at)}>{when(connection.updated_at)}</time>
+                    </span>
+                  )
+                : ops.isError
+                  ? <span className='text-sm text-muted-foreground'>Estado no disponible</span>
+                  : <span className='state' data-tone='pending'>Sin conectar</span>}
+            <Button asChild variant='outline'>
+              <a href={`/api/auth/twitch?purpose=${purpose}`}>
+                {connection ? 'Reconectar' : 'Conectar'} {label[purpose]}
+              </a>
+            </Button>
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 function Reminders () {
