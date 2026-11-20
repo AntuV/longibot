@@ -1,142 +1,202 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-19T03:09:10.889898+00:00",
+  "generatedAt": "2026-11-19T00:00:00+00:00",
   "title": "Design System: LongiBot",
   "extensions": {
     "colorMeta": {
       "ink": {
         "role": "neutral",
         "displayName": "Ink",
-        "canonical": "#111110",
+        "canonical": "#0d1220",
         "tonalRamp": [
-          "#040404",
-          "#080808",
-          "#0d0d0c",
-          "#111110",
-          "#4c4c4c",
-          "#888888",
-          "#b8b8b7",
-          "#e2e2e2"
+          "#030408",
+          "#060910",
+          "#0a0e18",
+          "#0d1220",
+          "#4a4d58",
+          "#868890",
+          "#b6b8bc",
+          "#e2e3e4"
         ]
       },
       "stock": {
         "role": "neutral",
         "displayName": "Panel Stock",
-        "canonical": "#1b1a17",
+        "canonical": "#141b2e",
         "tonalRamp": [
-          "#070606",
-          "#0e0d0c",
-          "#141411",
-          "#1b1a17",
-          "#545351",
-          "#8d8c8b",
-          "#bbbab9",
-          "#e4e4e3"
+          "#05070c",
+          "#0a0e17",
+          "#0f1422",
+          "#141b2e",
+          "#4f5462",
+          "#8a8d96",
+          "#b8bbc0",
+          "#e3e4e6"
         ]
       },
       "stock-raised": {
         "role": "neutral",
         "displayName": "Raised Stock",
-        "canonical": "#24221e",
+        "canonical": "#1c2540",
         "tonalRamp": [
-          "#090808",
-          "#12110f",
-          "#1b1a16",
-          "#24221e",
-          "#5b5956",
-          "#92908e",
-          "#bdbdbc",
-          "#e5e4e4"
+          "#070910",
+          "#0e1220",
+          "#151c30",
+          "#1c2540",
+          "#555c70",
+          "#8e92a0",
+          "#bbbec6",
+          "#e4e5e8"
         ]
       },
       "accent-stock": {
         "role": "neutral",
         "displayName": "Accent Stock",
-        "canonical": "#2c2a25",
+        "canonical": "#243052",
         "tonalRamp": [
-          "#0b0a09",
-          "#161512",
-          "#21201c",
-          "#2c2a25",
-          "#615f5c",
-          "#969492",
-          "#c0bfbe",
-          "#e6e5e5"
+          "#090c14",
+          "#121829",
+          "#1b243e",
+          "#243052",
+          "#5b647d",
+          "#9298a8",
+          "#bdc1cb",
+          "#e5e6ea"
         ]
       },
       "tone": {
         "role": "neutral",
-        "displayName": "Screentone Grey",
-        "canonical": "#5f5b53",
+        "displayName": "Screentone Navy",
+        "canonical": "#3d4a72",
         "tonalRamp": [
-          "#181715",
-          "#302e2a",
-          "#47443e",
-          "#5f5b53",
-          "#87847e",
-          "#afada9",
-          "#cfcecb",
-          "#ecebea"
+          "#0f121c",
+          "#1e2539",
+          "#2e3856",
+          "#3d4a72",
+          "#6e7795",
+          "#9ea4b8",
+          "#c5c9d5",
+          "#e8e9ee"
         ]
       },
       "paper-dim": {
         "role": "neutral",
         "displayName": "Faded Ink",
-        "canonical": "#a8a296",
+        "canonical": "#a9b2c8",
         "tonalRamp": [
-          "#2a2826",
-          "#54514b",
-          "#7e7a70",
-          "#a8a296",
-          "#beb9b0",
-          "#d4d0ca",
-          "#e5e3e0",
-          "#f5f4f2"
+          "#2a2c32",
+          "#545964",
+          "#7f8696",
+          "#a9b2c8",
+          "#bec5d6",
+          "#d4d8e4",
+          "#e5e8ee",
+          "#f5f6f8"
         ]
       },
       "panel-line": {
         "role": "neutral",
         "displayName": "Panel Line",
-        "canonical": "#d9d3c5",
+        "canonical": "#e6dcc4",
         "tonalRamp": [
-          "#363531",
-          "#6c6a62",
-          "#a39e94",
-          "#d9d3c5",
-          "#e2ded4",
-          "#ece9e2",
-          "#f4f2ee",
-          "#fafaf8"
+          "#3a3731",
+          "#736e62",
+          "#aca593",
+          "#e6dcc4",
+          "#ece5d3",
+          "#f2eee2",
+          "#f8f4ed",
+          "#fcfbf8"
         ]
       },
       "paper": {
-        "role": "primary",
+        "role": "neutral",
         "displayName": "Paper",
-        "canonical": "#ede8dc",
+        "canonical": "#f4ecd8",
         "tonalRamp": [
-          "#3b3a37",
-          "#76746e",
-          "#b2aea5",
-          "#ede8dc",
-          "#f2eee5",
-          "#f6f4ee",
-          "#faf8f4",
-          "#fdfcfb"
+          "#3d3b36",
+          "#7a766c",
+          "#b7b1a2",
+          "#f4ecd8",
+          "#f7f1e2",
+          "#faf6ec",
+          "#fcf9f3",
+          "#fefdfa"
         ]
       },
       "red": {
         "role": "secondary",
-        "displayName": "Alarm Red",
-        "canonical": "#ee5a4f",
+        "displayName": "Vest Red",
+        "canonical": "#ef5a4c",
         "tonalRamp": [
-          "#3c1614",
-          "#772d28",
-          "#b2443b",
-          "#ee5a4f",
-          "#f2837b",
-          "#f6aca7",
-          "#faceca",
+          "#3c1613",
+          "#782d26",
+          "#b34439",
+          "#ef5a4c",
+          "#f38379",
+          "#f7aca6",
+          "#facec9",
           "#fdebea"
+        ]
+      },
+      "straw": {
+        "role": "primary",
+        "displayName": "Straw Gold",
+        "canonical": "#e8b45a",
+        "tonalRamp": [
+          "#3a2d16",
+          "#745a2d",
+          "#ae8744",
+          "#e8b45a",
+          "#eec783",
+          "#f4daac",
+          "#f8e8ce",
+          "#fcf6eb"
+        ]
+      },
+      "sash": {
+        "role": "secondary",
+        "displayName": "Sash Yellow",
+        "canonical": "#ffd23f",
+        "tonalRamp": [
+          "#403410",
+          "#806920",
+          "#bf9e2f",
+          "#ffd23f",
+          "#ffdd6f",
+          "#ffe89f",
+          "#fff2c5",
+          "#fffae8"
+        ]
+      },
+      "sky": {
+        "role": "secondary",
+        "displayName": "Open Sky",
+        "canonical": "#7fd3ea",
+        "tonalRamp": [
+          "#20353a",
+          "#406a75",
+          "#5f9eb0",
+          "#7fd3ea",
+          "#9fdeef",
+          "#bfe9f4",
+          "#d9f2f9",
+          "#f0fafc"
+        ]
+      },
+      "denim": {
+        "role": "secondary",
+        "displayName": "Denim",
+        "canonical": "#7a9dff",
+        "tonalRamp": [
+          "#1e2740",
+          "#3d4e80",
+          "#5c76bf",
+          "#7a9dff",
+          "#9bb6ff",
+          "#bcceff",
+          "#d7e2ff",
+          "#eff3ff"
         ]
       }
     },
@@ -229,9 +289,9 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Solid paper slab for the main action of a panel and the splash action.",
+      "description": "Solid straw slab for the main action of a panel and the splash action.",
       "html": "<button class=\"ds-btn-primary\">Vincular prediction</button>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-primary{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:var(--paper);color:var(--ink);border:2px solid var(--paper)} .ds-btn-primary:hover{background:#d9d3c5} .ds-btn-primary:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-primary{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:var(--straw);color:var(--ink);border:2px solid var(--straw)} .ds-btn-primary:hover{background:#f0c77a} .ds-btn-primary:focus-visible{outline:3px solid var(--sash);outline-offset:2px}"
     },
     {
       "name": "Outline Button",
@@ -239,7 +299,7 @@
       "refersTo": "button-outline",
       "description": "Framed secondary action; hover fills with raised stock.",
       "html": "<button class=\"ds-btn-outline\">Ver la cola</button>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-outline{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:transparent;color:var(--paper);border:2px solid var(--panel-line)} .ds-btn-outline:hover{background:var(--stock-raised)} .ds-btn-outline:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-outline{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:transparent;color:var(--paper);border:2px solid var(--panel-line)} .ds-btn-outline:hover{background:var(--stock-raised)} .ds-btn-outline:focus-visible{outline:3px solid var(--sash);outline-offset:2px}"
     },
     {
       "name": "Destructive Button",
@@ -247,7 +307,7 @@
       "refersTo": "button-destructive",
       "description": "Outlined in red for dangerous actions; never a solid red slab.",
       "html": "<button class=\"ds-btn-danger\">Cancelar prediction y reembolsar</button>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-danger{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:transparent;color:var(--red);border:2px solid var(--red)} .ds-btn-danger:hover{background:rgb(238 90 79 / 14%)} .ds-btn-danger:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-btn-danger{font-family:var(--font-sans);font-weight:700;font-size:.875rem;border-radius:2px;padding:.55rem 1rem;min-height:2.75rem;cursor:pointer;transition:background .15s;background:transparent;color:var(--red);border:2px solid var(--red)} .ds-btn-danger:hover{background:rgb(238 90 79 / 14%)} .ds-btn-danger:focus-visible{outline:3px solid var(--sash);outline-offset:2px}"
     },
     {
       "name": "Text Input",
@@ -255,7 +315,7 @@
       "refersTo": "input",
       "description": "2px stroke at paper 30%, nearly square, paper caret.",
       "html": "<input class=\"ds-input\" placeholder=\"!duo\" />",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-input{font-family:var(--font-sans);font-size:1rem;color:var(--paper);background:transparent;border:2px solid rgb(237 232 220 / 30%);border-radius:2px;padding:.5rem .75rem;min-height:2.75rem;caret-color:var(--paper)} .ds-input::placeholder{color:var(--paper-dim)} .ds-input:focus-visible{outline:3px solid rgb(237 232 220 / 50%);border-color:var(--paper)}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-input{font-family:var(--font-sans);font-size:1rem;color:var(--paper);background:transparent;border:2px solid rgb(244 236 216 / 30%);border-radius:2px;padding:.5rem .75rem;min-height:2.75rem;caret-color:var(--paper)} .ds-input::placeholder{color:var(--paper-dim)} .ds-input:focus-visible{outline:3px solid var(--sash);border-color:var(--paper)}"
     },
     {
       "name": "State Chips",
@@ -263,7 +323,7 @@
       "refersTo": "state-live",
       "description": "State words carry form: solid live, dashed pending, red alert, quiet done.",
       "html": "<div class=\"ds-row\"><span class=\"ds-state ds-live\">En juego</span><span class=\"ds-state ds-pending\">Pendiente</span><span class=\"ds-state ds-alert\">Falló</span><span class=\"ds-state ds-done\">Entregado</span></div>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-row{display:flex;gap:.5rem;flex-wrap:wrap;background:var(--stock);padding:1rem} .ds-state{display:inline-flex;align-items:center;padding:.05rem .5rem;border:2px solid var(--panel-line);font-family:var(--font-sans);font-size:.8125rem;font-weight:700;color:var(--paper)} .ds-pending{border-style:dashed;color:var(--paper-dim)} .ds-alert{border-color:var(--red);color:var(--red)} .ds-done{border-color:rgb(237 232 220 / 16%);color:var(--paper-dim)} .ds-live{background:var(--paper);color:var(--ink)}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-row{display:flex;gap:.5rem;flex-wrap:wrap;background:var(--stock);padding:1rem} .ds-state{display:inline-flex;align-items:center;padding:.05rem .5rem;border:2px solid var(--panel-line);font-family:var(--font-sans);font-size:.8125rem;font-weight:700;color:var(--paper)} .ds-pending{border-style:dashed;border-color:var(--denim);color:var(--denim)} .ds-alert{border-color:var(--red);color:var(--red)} .ds-done{border-color:rgb(244 236 216 / 16%);color:var(--paper-dim)} .ds-live{background:var(--sky);border-color:var(--sky);color:var(--ink)}"
     },
     {
       "name": "Panel",
@@ -271,15 +331,15 @@
       "refersTo": "panel",
       "description": "Every card is a manga panel: stock fill, 3px panel-line frame, flat.",
       "html": "<section class=\"ds-panel\"><h2>Al final de la partida</h2><p>Avisar que el sorteo de la skin es al final del stream.</p></section>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-panel{background:var(--stock);color:var(--paper);border:3px solid var(--panel-line);border-radius:2px;padding:1.25rem;font-family:var(--font-sans);line-height:1.6} .ds-panel h2{font-family:var(--font-display);font-weight:400;font-size:1.125rem;line-height:1.3;margin:0 0 .5rem} .ds-panel p{margin:0;color:var(--paper-dim)}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-panel{background:var(--stock);color:var(--paper);border:3px solid var(--panel-line);border-radius:2px;padding:1.25rem;font-family:var(--font-sans);line-height:1.6} .ds-panel h2{font-family:var(--font-display);font-weight:400;font-size:1.125rem;line-height:1.3;margin:0 0 .5rem} .ds-panel p{margin:0;color:var(--paper-dim)}"
     },
     {
       "name": "Navigation Rail",
       "kind": "nav",
       "refersTo": "navlink-active",
-      "description": "Desktop rail items; the active item inverts to solid paper.",
+      "description": "Desktop rail items; the active item becomes a solid straw slab.",
       "html": "<nav class=\"ds-nav\"><a class=\"ds-navlink\" aria-current=\"page\" href=\"#\">Resumen</a><a class=\"ds-navlink\" href=\"#\">Recordatorios</a><a class=\"ds-navlink\" href=\"#\">Predictions</a></nav>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-nav{display:flex;flex-direction:column;gap:.25rem;background:var(--ink);padding:1rem;width:15rem;border-right:3px solid var(--panel-line)} .ds-navlink{display:flex;align-items:center;min-height:2.5rem;padding:0 .75rem;border-radius:2px;font-family:var(--font-sans);font-weight:700;color:var(--paper-dim);text-decoration:none;transition:background .15s,color .15s} .ds-navlink:hover{color:var(--paper);background:var(--stock)} .ds-navlink[aria-current=page]{color:var(--ink);background:var(--paper)} .ds-navlink:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-nav{display:flex;flex-direction:column;gap:.25rem;background:var(--ink);padding:1rem;width:15rem;border-right:3px solid var(--panel-line)} .ds-navlink{display:flex;align-items:center;min-height:2.5rem;padding:0 .75rem;border-radius:2px;font-family:var(--font-sans);font-weight:700;color:var(--paper-dim);text-decoration:none;transition:background .15s,color .15s} .ds-navlink:hover{color:var(--paper);background:var(--stock)} .ds-navlink[aria-current=page]{color:var(--ink);background:var(--straw)} .ds-navlink:focus-visible{outline:3px solid var(--sash);outline-offset:2px}"
     },
     {
       "name": "Record (ficha)",
@@ -287,7 +347,7 @@
       "refersTo": "record-win",
       "description": "Night record cells: win paper, loss red, remake screentone, in progress dashed.",
       "html": "<ol class=\"ds-record\"><li class=\"ds-live\">·</li><li class=\"ds-win\">V</li><li class=\"ds-loss\">D</li><li class=\"ds-remake\">R</li><li class=\"ds-win\">V</li></ol>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-record{display:flex;gap:.375rem;padding:1rem;margin:0;background:var(--stock)} .ds-record li{list-style:none;display:grid;place-items:center;width:2.25rem;height:2.25rem;border:2px solid var(--panel-line);font-family:var(--font-display);color:var(--paper)} .ds-win{background:var(--paper);color:var(--ink)!important} .ds-loss{background:var(--red);border-color:var(--red)!important;color:var(--ink)!important} .ds-remake{background:var(--screentone)} .ds-live{border-style:dashed!important}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-record{display:flex;gap:.375rem;padding:1rem;margin:0;background:var(--stock)} .ds-record li{list-style:none;display:grid;place-items:center;width:2.25rem;height:2.25rem;border:2px solid var(--panel-line);font-family:var(--font-display);color:var(--paper)} .ds-win{background:var(--sash);border-color:var(--sash)!important;color:var(--ink)!important} .ds-loss{background:var(--red);border-color:var(--red)!important;color:var(--ink)!important} .ds-remake{background:var(--screentone)} .ds-live{border-style:dashed!important}"
     },
     {
       "name": "Splash Panel (alert)",
@@ -295,7 +355,7 @@
       "refersTo": "splash-tag-alert",
       "description": "Signature: tilted, speed lines, red caption box in the corner; only when something needs a human.",
       "html": "<section class=\"ds-splash\"><span class=\"ds-tag\">Necesita atención</span><h2>Twitch no confirmó la <em>prediction</em></h2><p>Partida LA2_1483955 · hace 2 horas.</p><button class=\"ds-act\">Vincular prediction</button></section>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-splash{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.75rem;padding:3.25rem 1.25rem 1.375rem;border:4px solid var(--panel-line);border-radius:2px;background:var(--stock);color:var(--paper);font-family:var(--font-sans);transform:rotate(-.8deg);margin:.5rem;animation:ds-slam .45s cubic-bezier(.16,1,.3,1)} .ds-splash::before{content:\"\";position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 88% 18%,rgb(237 232 220 / 11%) 0 1.3deg,transparent 1.3deg 6.5deg);mask:radial-gradient(circle at 88% 18%,transparent 9%,#000 40%)} .ds-splash>*{position:relative;margin:0} .ds-splash h2{font-family:var(--font-display);font-weight:400;font-size:2rem;line-height:1.1} .ds-splash em{font-style:normal;color:var(--red)} .ds-tag{position:absolute!important;top:0;left:0;padding:.3rem .75rem .35rem;border-right:3px solid var(--panel-line);border-bottom:3px solid var(--panel-line);background:var(--red);color:var(--ink);font-weight:700;font-size:.8125rem} .ds-act{align-self:flex-start;font-family:var(--font-sans);font-weight:700;background:var(--paper);color:var(--ink);border:0;border-radius:2px;padding:.6rem 1rem;min-height:2.75rem;cursor:pointer} .ds-act:focus-visible{outline:3px solid rgb(237 232 220 / 50%);outline-offset:2px} @keyframes ds-slam{from{transform:rotate(-.8deg) scale(1.035);opacity:.4}to{transform:rotate(-.8deg) scale(1);opacity:1}} @media (prefers-reduced-motion:reduce){.ds-splash{animation:none}}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-splash{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.75rem;padding:3.25rem 1.25rem 1.375rem;border:4px solid var(--panel-line);border-radius:2px;background:var(--stock);color:var(--paper);font-family:var(--font-sans);transform:rotate(-.8deg);margin:.5rem;animation:ds-slam .45s cubic-bezier(.16,1,.3,1)} .ds-splash::before{content:\"\";position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 88% 18%,rgb(244 236 216 / 11%) 0 1.3deg,transparent 1.3deg 6.5deg);mask:radial-gradient(circle at 88% 18%,transparent 9%,#000 40%)} .ds-splash>*{position:relative;margin:0} .ds-splash h2{font-family:var(--font-display);font-weight:400;font-size:2rem;line-height:1.1} .ds-splash em{font-style:normal;color:var(--red)} .ds-tag{position:absolute!important;top:0;left:0;padding:.3rem .75rem .35rem;border-right:3px solid var(--panel-line);border-bottom:3px solid var(--panel-line);background:var(--red);color:var(--ink);font-weight:700;font-size:.8125rem} .ds-act{align-self:flex-start;font-family:var(--font-sans);font-weight:700;background:var(--straw);color:var(--ink);border:0;border-radius:2px;padding:.6rem 1rem;min-height:2.75rem;cursor:pointer} .ds-act:focus-visible{outline:3px solid var(--sash);outline-offset:2px} @keyframes ds-slam{from{transform:rotate(-.8deg) scale(1.035);opacity:.4}to{transform:rotate(-.8deg) scale(1);opacity:1}} @media (prefers-reduced-motion:reduce){.ds-splash{animation:none}}"
     },
     {
       "name": "Splash Panel (calm)",
@@ -303,17 +363,18 @@
       "refersTo": "splash-tag-calm",
       "description": "Settled state: untilted, paper caption box, screentone from the open corner, never under text.",
       "html": "<section class=\"ds-calm\"><span class=\"ds-tag\">Todo en orden</span><h2>Nada necesita atención</h2><p>Si algo se traba, aparece acá primero.</p></section>",
-      "css": ":host{--ink:#111110;--stock:#1b1a17;--stock-raised:#24221e;--paper:#ede8dc;--paper-dim:#a8a296;--tone:#5f5b53;--red:#ee5a4f;--panel-line:#d9d3c5;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-calm{position:relative;display:flex;flex-direction:column;gap:.75rem;padding:3.25rem 1.25rem 1.375rem;border:3px solid var(--panel-line);border-radius:2px;color:var(--paper);font-family:var(--font-sans);background:linear-gradient(105deg,var(--stock) 50%,rgb(27 26 23 / 0%) 82%),var(--screentone);background-color:var(--stock)} .ds-calm>*{margin:0} .ds-calm h2{font-family:var(--font-display);font-weight:400;font-size:2rem;line-height:1.1} .ds-calm p{color:var(--paper-dim)} .ds-tag{position:absolute;top:0;left:0;padding:.3rem .75rem .35rem;border-right:3px solid var(--panel-line);border-bottom:3px solid var(--panel-line);background:var(--paper);color:var(--ink);font-weight:700;font-size:.8125rem}"
+      "css": ":host{--ink:#0d1220;--stock:#141b2e;--stock-raised:#1c2540;--paper:#f4ecd8;--paper-dim:#a9b2c8;--tone:#3d4a72;--red:#ef5a4c;--straw:#e8b45a;--sash:#ffd23f;--sky:#7fd3ea;--denim:#7a9dff;--panel-line:#e6dcc4;--screentone:radial-gradient(circle,var(--tone) 1.1px,transparent 1.4px) 0 0/6px 6px;--font-display:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;--font-sans:'Zen Kaku Gothic New',system-ui,sans-serif} .ds-calm{position:relative;display:flex;flex-direction:column;gap:.75rem;padding:3.25rem 1.25rem 1.375rem;border:3px solid var(--panel-line);border-radius:2px;color:var(--paper);font-family:var(--font-sans);background:linear-gradient(105deg,var(--stock) 50%,rgb(20 27 46 / 0%) 82%),radial-gradient(circle,rgb(127 211 234 / 55%) 1.1px,transparent 1.4px) 0 0/6px 6px;background-color:var(--stock)} .ds-calm>*{margin:0} .ds-calm h2{font-family:var(--font-display);font-weight:400;font-size:2rem;line-height:1.1} .ds-calm p{color:var(--paper-dim)} .ds-tag{position:absolute;top:0;left:0;padding:.3rem .75rem .35rem;border-right:3px solid var(--panel-line);border-bottom:3px solid var(--panel-line);background:var(--sky);color:var(--ink);font-weight:700;font-size:.8125rem}"
     }
   ],
   "narrative": {
     "northStar": "La viñeta",
-    "overview": "The dashboard is an inked manga page printed in reverse for night use. Every job sits in its own panel: dark stock framed in a heavy paper-colored line, separated by black gutters. The page is calm and orderly until something needs a human; then one panel breaks the grid. It tilts, gains speed lines, and carries a red caption box. That break is the whole signature, and it only means one thing.\n\nThe system is dark only. The mods operate it from a phone at night, mid-stream, so legibility outranks atmosphere: the world never hides a state, and every state reads through form as well as color (solid, dashed, screentone, red). Ornament is limited to devices a manga page already has: frames, gutters, caption boxes, screentone, speed lines. Shadcn/ui components remain underneath, restyled through tokens and attribute selectors rather than replaced.\n\nIt refuses the stacked grey cards of a stock admin panel. Nothing floats on soft shadows; panels sit flat on the page, held by their frames.",
+    "overview": "The dashboard is an inked manga page printed in reverse for night use and colored like a shōnen adventure. Its soul is a straw hat pirate's outfit, used as a palette and never as a picture: straw gold for the crew's identity, sash yellow for victories, open-sky blue for calm, denim for what is still waiting, and the red of the vest kept for trouble. Every job sits in its own panel: deep navy stock framed in a heavy paper-colored line, separated by night-sea gutters. The page is calm and orderly until something needs a human; then one panel breaks the grid. It tilts, gains speed lines, and carries a red caption box. That break is the whole signature, and it only means one thing.\n\nThe system is dark only. The mods operate it from a phone at night, mid-stream, so legibility outranks atmosphere: the world never hides a state, and every state reads through form as well as color (solid, dashed, screentone, red). Ornament is limited to devices a manga page already has: frames, gutters, caption boxes, screentone, speed lines. Shadcn/ui components remain underneath, restyled through tokens and attribute selectors rather than replaced.\n\nIt refuses the stacked grey cards of a stock admin panel. Nothing floats on soft shadows; panels sit flat on the page, held by their frames.",
     "keyCharacteristics": [
-      "Dark only: ink ground, dark stock panels, paper-colored ink for text and frames.",
+      "Dark only: navy ink ground, navy stock panels, paper-colored ink for text and frames.",
+      "Straw gold is always on screen: the brand, the active item and the primary action carry it, so the calm screen is never colorless.",
       "3px panel frames with nearly square corners (2px) and black gutters between panels.",
-      "One red, for urgent and dangerous things only.",
-      "State grammar by form: solid paper, dashed outline, screentone, red.",
+      "One red, for urgent and dangerous things only; the other accents never mean danger.",
+      "State grammar by form and color: solid sky (live), dashed denim (pending), screentone, red.",
       "Two faces: a heavy display gothic for titles and numbers, a quiet gothic for text.",
       "One signature: the splash panel, tilted with speed lines when something needs a human, settled and untilted when all is in order."
     ],
@@ -324,8 +385,8 @@
         "section": "colors"
       },
       {
-        "name": "The Reversed Ink Rule",
-        "body": "Paper is ink here. Emphasis and \"active\" are shown by inverting to a solid paper fill with ink text, not by a new hue.",
+        "name": "The Straw Hat Rule",
+        "body": "Identity is straw gold and it is always present: active and primary are shown as a solid straw slab with ink text. Sash, sky and denim each own one meaning (win and focus, calm and live, waiting) and are never swapped or used as ornament.",
         "section": "colors"
       },
       {
@@ -356,8 +417,8 @@
     ],
     "dos": [
       "**Do** frame every panel with a 3px panel-line border and a 2px corner, on panel stock, separated by ink gutters.",
-      "**Do** show every state by form as well as color: solid paper (win, live), red (loss, alert), screentone (remake), dashed (pending, in progress).",
-      "**Do** invert to solid paper with ink text for the active nav item, active tab and primary action.",
+      "**Do** show every state by form as well as color: solid sash (win), solid sky (live), red (loss, alert), screentone (remake), dashed (pending, in progress).",
+      "**Do** use solid straw with ink text for the active nav item, active tab and primary action.",
       "**Do** keep screentone in open areas, never under text.",
       "**Do** confirm irreversible actions inline in a dashed panel before they run.",
       "**Do** keep every phone target at 44px (2.75rem) or more.",
@@ -365,6 +426,8 @@
     ],
     "donts": [
       "**Don't** use red for anything that is not urgent or dangerous (the on-air dot is the one exception).",
+      "**Don't** draw the reference character or use its name, art or logo anywhere; the outfit is a palette only.",
+      "**Don't** let a screen go without straw; a colorless calm screen is a bug.",
       "**Don't** tilt, add speed lines or use the red caption box outside the alert splash panel.",
       "**Don't** put soft drop shadows on panels; only the toast and the phone sheet float.",
       "**Don't** set running text, buttons or labels in Dela Gothic One.",

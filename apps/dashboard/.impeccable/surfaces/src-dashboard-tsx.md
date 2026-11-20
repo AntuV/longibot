@@ -17,7 +17,7 @@ Constraints: behavior, API, harden confirmations, clarify copy and the longibot 
 
 THESIS: The panel as an inked manga page: every job is a panel, and what needs a human breaks the grid. It refuses the stacked grey cards of the stock admin.
 
-OWN-WORLD: Inked page: ink ground #111110, panel stock #1B1A17, 3px paper-colored (#EDE8DC) panel borders with black gutters, screentone dot fields in grey, one red #E0443C for urgent and danger only. Dela Gothic One for titles and numbers, Zen Kaku Gothic New for text. Win is a solid paper panel with ink text, loss is red, remake is screentone, in progress is outline.
+OWN-WORLD: Inked page colored like a straw hat pirate's outfit (palette only, never the character): navy ink ground #0D1220, panel stock #141B2E, 3px cream (#E6DCC4) panel borders with night-sea gutters. Straw gold #E8B45A is identity (brand, active, primary) and is on every screen; sash yellow #FFD23F marks wins and focus; sky #7FD3EA marks calm and live; denim #7A9DFF marks waiting; vest red #EF5A4C is urgent and danger only. Dela Gothic One for titles and numbers, Zen Kaku Gothic New for text. Win is solid sash, loss is red, remake is screentone, in progress is outline. Revised 2026-11-19 by user decision: the first build was near-monochrome and the calm screen had no color.
 
 STORY: The mod opens the panel, reads the splash panel, taps its action, sees the live prediction and resolves it safely, and leaves knowing the night's record and the queue.
 
