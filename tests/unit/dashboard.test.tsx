@@ -200,6 +200,7 @@ describe('administration screens', () => {
 it('handles empty success and malformed error responses without publishing server internals', async () => {
   fetcher.mockResolvedValueOnce(new Response(null, { status: 204 }))
   expect(await api('auth/logout', { method: 'POST', csrf: 'csrf' })).toBeUndefined()
+  expect(fetcher.mock.lastCall?.[1]?.headers).toEqual({ 'X-CSRF-Token': 'csrf' })
   fetcher.mockResolvedValueOnce(new Response('not JSON', { status: 500 }))
   await expect(api('anything')).rejects.toBeInstanceOf(ApiError)
 })
