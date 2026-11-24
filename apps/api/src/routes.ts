@@ -32,7 +32,7 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
   const services = () => {
     if (!store) throw new DomainError('Base de datos no disponible', 503)
     const twitch = gateway ?? new Twitch(store, integrationConfig())
-    return { store, twitch, auth: new Auth(store, twitch, botManagers) }
+    return { store, twitch, auth: new Auth(store, twitch, botManagers, botLogin) }
   }
   const session = async (r: FastifyRequest, mutation = false) => {
     const ctx = services(); const user = await ctx.auth.session(r.cookies.lb_session)
@@ -88,8 +88,9 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
     if (webhook.type === 'webhook_callback_verification') return reply.type('text/plain').send(webhook.body.challenge ?? '')
     if (webhook.type === 'revocation') await store.ingest({ id: webhook.id, type: 'twitch.authorization.revoked.v1', at: webhook.at, data: { subscription: webhook.body.subscription.id, reason: webhook.body.subscription.status ?? 'revoked' } })
     else {
-      const bot = await store.pool.query<{ user_id: string }>("SELECT user_id FROM oauth_connections WHERE channel=$1 AND purpose='bot' ORDER BY updated_at DESC LIMIT 1", [channel])
-      await store.ingest(normalize(webhook.id, webhook.body.subscription.type, webhook.body.event ?? {}, webhook.at, broadcasterId, { botId: bot.rows[0]?.user_id, ownerId: process.env.OWNER_TWITCH_USER_ID }))
+      const { type, condition } = webhook.body.subscription
+      const botId = type === 'channel.chat.message' && typeof condition.user_id === 'string' ? condition.user_id : undefined
+      await store.ingest(normalize(webhook.id, type, webhook.body.event ?? {}, webhook.at, broadcasterId, { botId, ownerId: process.env.OWNER_TWITCH_USER_ID }))
     }
     return reply.code(204).send()
   })
@@ -99,7 +100,9 @@ export function installRoutes (server: FastifyInstance, pool: Pool | undefined, 
   })
   server.get('/api/admin/operations', async r => {
     const { store } = await session(r)
-    const [audit, events, deliveries, connections, worker, failedJobs] = await Promise.all([store.audit(), store.events(), store.deliveries(), store.pool.query<{ purpose: string, user_id: string, updated_at: string }>('SELECT purpose,user_id,updated_at FROM oauth_connections WHERE channel=$1', [channel]), store.pool.query<{ value: unknown }>('SELECT value FROM runtime_metadata WHERE key=$1', [`worker:${channel}`]), store.failedJobs()])
+    const [audit, events, deliveries, connections, worker, failedJobs] = await Promise.all([store.audit(), store.events(), store.deliveries(), store.pool.query<{ purpose: string, user_id: string, updated_at: string }>(`
+      SELECT purpose,user_id,updated_at FROM oauth_connections WHERE channel=$1
+        AND (purpose <> 'bot' OR user_id IS DISTINCT FROM (SELECT broadcaster_id FROM channel_state WHERE channel=$1))`, [channel]), store.pool.query<{ value: unknown }>('SELECT value FROM runtime_metadata WHERE key=$1', [`worker:${channel}`]), store.failedJobs()])
     return { audit, events, deliveries, failedJobs, connections: connections.rows, worker: worker.rows[0]?.value ?? null }
   })
   server.put('/api/admin/settings', async r => {

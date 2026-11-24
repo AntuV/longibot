@@ -12,7 +12,7 @@ export type Purpose = keyof typeof scopes
 export interface Session { userId: string, name: string, csrf: string, admin: true, streamer: boolean, botManager: boolean }
 export type AuthTwitch = Pick<Twitch, 'config' | 'user' | 'exchange' | 'validate' | 'save' | 'access' | 'authorized'>
 export class Auth {
-  constructor (readonly store: Store, readonly twitch: AuthTwitch, readonly botManagers: readonly string[] = ['antuv']) {}
+  constructor (readonly store: Store, readonly twitch: AuthTwitch, readonly botManagers: readonly string[] = ['antuv'], readonly botLogin = 'longibot') {}
   async start (purpose: Purpose, sessionId?: string) {
     if (purpose !== 'dashboard') {
       const session = await this.session(sessionId)
@@ -40,9 +40,10 @@ export class Auth {
     const broadcasterId = await this.store.identity()
     if (!broadcasterId) throw new DomainError('Canal no conectado', 503)
     if (purpose === 'broadcaster' && identity.user_id !== broadcasterId) throw new DomainError('Autorizar con la cuenta del streamer', 403)
+    if (purpose === 'bot' && (identity.user_id === broadcasterId || identity.login.toLowerCase() !== this.botLogin)) throw new DomainError(`Autorizá con la cuenta del bot (@${this.botLogin}).`, 403)
     if (purpose === 'dashboard' && !await this.twitch.authorized(identity.user_id, token.accessToken, broadcasterId)) throw new DomainError('Acceso reservado a streamer y moderadores actuales', 403)
-    if (purpose === 'bot') await this.store.pool.query('DELETE FROM oauth_connections WHERE channel=$1 AND purpose=$2 AND user_id<>$3', [this.store.channel, purpose, identity.user_id])
     await this.twitch.save(purpose, identity.user_id, token)
+    if (purpose === 'bot') await this.store.pool.query('DELETE FROM oauth_connections WHERE channel=$1 AND purpose=$2 AND user_id<>$3', [this.store.channel, purpose, identity.user_id])
     if (purpose !== 'dashboard') return undefined
     const id = opaque(); const csrf = opaque()
     await this.store.pool.query('INSERT INTO sessions(id,channel,user_id,name,csrf,expires_at) VALUES($1,$2,$3,$4,$5,now()+interval \'8 hours\')', [hash(id), this.store.channel, identity.user_id, identity.login, csrf])

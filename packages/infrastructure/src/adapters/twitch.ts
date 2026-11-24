@@ -53,7 +53,11 @@ export class Twitch {
   async access (purpose: string, userId?: string) {
     // Serialize rotating refresh tokens across API and worker instances.
     return this.store.transaction(async c => {
-      const row = await c.query<{ user_id: string, encrypted: string }>('SELECT user_id,encrypted FROM oauth_connections WHERE channel=$1 AND purpose=$2 AND ($3::text IS NULL OR user_id=$3) ORDER BY updated_at DESC LIMIT 1 FOR UPDATE', [this.store.channel, purpose, userId ?? null])
+      const row = await c.query<{ user_id: string, encrypted: string }>(`
+        SELECT user_id, encrypted FROM oauth_connections
+        WHERE channel=$1 AND purpose=$2 AND ($3::text IS NULL OR user_id=$3)
+          AND (purpose <> 'bot' OR user_id IS DISTINCT FROM (SELECT broadcaster_id FROM channel_state WHERE channel=$1))
+        ORDER BY updated_at DESC LIMIT 1 FOR UPDATE`, [this.store.channel, purpose, userId ?? null])
       if (!row.rows[0]) throw new DomainError(`Falta conectar ${purpose}`, 503)
       const record = row.rows[0]
       let token = tokenSchema.parse(decrypt(record.encrypted, this.config.encryptionKey))
