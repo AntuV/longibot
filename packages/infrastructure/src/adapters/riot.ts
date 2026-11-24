@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { Account, Game } from '../../../features/src/model.js'
 import { DomainError } from '../../../features/src/model.js'
 import { Http, ProviderError } from './http.js'
-const participant = z.object({ puuid: z.string(), championId: z.number(), riotId: z.string().optional(), summonerName: z.string().optional() })
+const participant = z.object({ puuid: z.string().nullish(), championId: z.number(), riotId: z.string().optional(), summonerName: z.string().optional() })
 const spectator = z.object({ gameId: z.number(), gameStartTime: z.number(), gameQueueConfigId: z.number(), participants: z.array(participant) })
 const matchSchema = z.object({ metadata: z.object({ matchId: z.string() }), info: z.object({ gameEndTimestamp: z.number().optional(), gameStartTimestamp: z.number(), gameDuration: z.number(), queueId: z.number(), participants: z.array(z.object({ puuid: z.string(), championId: z.number(), win: z.boolean(), gameEndedInEarlySurrender: z.boolean().optional() })) }) })
 export class Riot {
@@ -63,6 +63,7 @@ export class Riot {
     const champion = matches[0]!
     const player = active.participants.find(p => p.championId === Number(champion.key))
     if (!player) return 'Ese campeón no está en esta partida.'
+    if (!player.puuid) return 'Riot no comparte el historial de ese jugador.'
     const account = { ...a, puuid: player.puuid }
     const ids = await this.history(account, 420)
     const games = []
