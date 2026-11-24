@@ -133,9 +133,15 @@ export class Runtime {
     })
     if (!claimed) return
     try {
-      const id = await this.twitch.send(this.broadcasterId, next.text)
+      const id = await this.twitch.send(this.broadcasterId, next.text, next.replyTo)
       await this.store.change(s => { const m = s.messages[next.id]!; triviaDelivered(s, m.id, now); m.status = 'sent'; m.externalId = id; if (m.reminderId) { const r = s.reminders[m.reminderId]!; r.status = 'sent'; r.messageId = id } })
     } catch (e) {
+      const status = e instanceof ProviderError || e instanceof DomainError ? e.status : undefined
+      if (next.replyTo && (status === 400 || status === 404 || status === 422)) {
+        await this.store.change(s => { delete s.messages[next.id] })
+        await this.error('chat', e, now)
+        return
+      }
       const definite = (e instanceof ProviderError && e.status >= 400 && e.status < 500) || e instanceof DomainError
       await this.store.change(s => { const m = s.messages[next.id]!; m.status = definite ? 'pending' : 'unknown'; if (m.reminderId) s.reminders[m.reminderId]!.status = definite ? 'queued' : 'delivery_unknown' })
       await this.error('chat', e, now)

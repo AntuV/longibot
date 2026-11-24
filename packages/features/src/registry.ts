@@ -5,7 +5,7 @@ import { reminderCommand, remindersEvent } from './reminders.js'
 import { predictionsEvent } from './predictions.js'
 import { answerTrivia, triviaCommand, storyCommand } from './games-play.js'
 
-import type { Command } from './commands.js'
+import type { Command, CommandContext } from './commands.js'
 export interface Feature { name: string, events: string[], handle: (s: State, e: DomainEvent) => void, commands?: Record<string, Command>, enabled?: (s: State) => boolean, disabledMessage?: string }
 const all = ['*']
 export const features: Feature[] = [
@@ -27,14 +27,14 @@ export const features: Feature[] = [
   }
 ]
 export function consumers (type: string, registry = features) { return registry.filter(f => f.events.includes('*') || f.events.includes(type)) }
-export function chat (s: State, actor: Actor, id: string, text: string, at: number, random = Math.random(), guest?: Actor, registry = features) {
+export function chat (s: State, actor: Actor, id: string, text: string, at: number, options: Partial<Pick<CommandContext, 'random' | 'guest' | 'replyTo'>> & { registry?: Feature[] } = {}) {
   if (!text.startsWith('!')) { answerTrivia(s, actor, text, at); return }
   const [root, ...args] = text.trim().split(/\s+/)
   try {
-    const feature = registry.find(f => f.commands?.[root?.toLowerCase() ?? ''])
+    const feature = (options.registry ?? features).find(f => f.commands?.[root?.toLowerCase() ?? ''])
     if (!feature) return
     if (feature.enabled && !feature.enabled(s)) throw new DomainError(feature.disabledMessage ?? 'Feature deshabilitada')
-    feature.commands![root!.toLowerCase()]!({ state: s, actor, id, args, at, random, guest })
+    feature.commands![root!.toLowerCase()]!({ state: s, actor, id, args, at, random: options.random ?? Math.random(), guest: options.guest, replyTo: options.replyTo })
   } catch (error) {
     if (!(error instanceof DomainError)) throw error
     message(s, `error:${id}`, error.message, at)
@@ -50,7 +50,7 @@ function channelEvent (s: State, e: DomainEvent) {
     if (typeof e.data.userId !== 'string' || typeof e.data.text !== 'string') return
     const actor = { id: e.data.userId, name: String(e.data.userName), admin: e.data.admin === true }
     if (/^!(lol|historia)\s+/i.test(e.data.text)) s.chatTasks[e.id] ??= { id: e.id, actor, text: e.data.text, at: e.at }
-    else chat(s, actor, e.id, e.data.text, e.at)
+    else chat(s, actor, e.id, e.data.text, e.at, { replyTo: typeof e.data.chatMessageId === 'string' ? e.data.chatMessageId : undefined })
   }
   // Gifted subscriptions are represented by the grouped gift event only.
   if (e.type === 'twitch.subscription.started.v1' && e.data.isGift === true) return

@@ -92,9 +92,9 @@ export class Twitch {
     }
   }
 
-  async send (broadcasterId: string, message: string) {
+  async send (broadcasterId: string, message: string, replyTo?: string) {
     const access = await this.access('bot')
-    const r = z.object({ data: z.array(z.object({ message_id: z.string(), is_sent: z.boolean() })) }).parse(await this.helix('chat/messages', access.token, 'POST', { broadcaster_id: broadcasterId, sender_id: access.userId, message }))
+    const r = z.object({ data: z.array(z.object({ message_id: z.string(), is_sent: z.boolean() })) }).parse(await this.helix('chat/messages', access.token, 'POST', { broadcaster_id: broadcasterId, sender_id: access.userId, message, ...(replyTo ? { reply_parent_message_id: replyTo } : {}) }))
     if (!r.data[0]?.is_sent) throw new DomainError('Twitch rechazó el mensaje', 422)
     return r.data[0].message_id
   }

@@ -76,8 +76,8 @@ describe('EventSub signatures and normalization', () => {
     const base = { broadcaster_user_id: 'b', user_id: 'u', user_name: 'User' }
     expect(normalize('id', 'channel.bits.use', { ...base, is_anonymous: true, type: 'cheer' }, 0, 'b').data).toMatchObject({ anonymous: true, payment: 'bits', subtype: 'cheer' })
     expect(normalize('id', 'channel.bits.use', { ...base, is_anonymous: true }, 0, 'b').data.userId).toBeUndefined()
-    const chat = normalize('id', 'channel.chat.message', { ...base, chatter_user_id: 'u', chatter_user_name: 'U', message: { text: '!ayuda' }, badges: [{ set_id: 'moderator' }] }, 0, 'b')
-    expect(chat.data).toMatchObject({ admin: true, text: '!ayuda', userId: 'u' })
+    const chat = normalize('id', 'channel.chat.message', { ...base, chatter_user_id: 'u', chatter_user_name: 'U', message_id: 'chat-id', message: { text: '!ayuda' }, badges: [{ set_id: 'moderator' }] }, 0, 'b')
+    expect(chat.data).toMatchObject({ admin: true, text: '!ayuda', userId: 'u', chatMessageId: 'chat-id' })
     expect(normalize('id', 'channel.chat.message', { ...base, chatter_user_id: 'b' }, 0, 'b').data.admin).toBe(true)
     expect(normalize('id', 'channel.channel_points_automatic_reward_redemption.add', { ...base, reward: { id: 'r', type: 'highlighted_message' } }, 0, 'b').data).toMatchObject({ payment: 'channel_points', rewardId: 'r' })
     expect(normalize('id', 'channel.prediction.end', { ...base, id: 'p', status: 'resolved' }, 0, 'b').data.status).toBe('RESOLVED')
@@ -112,6 +112,10 @@ describe('Twitch HTTP adapter', () => {
     expect((await twitch.exchange('code')).accessToken).toBe('user')
     vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'token', userId: 'bot' })
     f.mockResolvedValueOnce(json({ data: [{ message_id: 'sent', is_sent: true }] })); expect(await twitch.send('b', 'hello')).toBe('sent')
+    expect(JSON.parse(String(f.mock.lastCall?.[1]?.body))).not.toHaveProperty('reply_parent_message_id')
+    f.mockResolvedValueOnce(json({ data: [{ message_id: 'reply', is_sent: true }] }))
+    expect(await twitch.send('b', '¡Recordatorio guardado!', 'chat-id')).toBe('reply')
+    expect(JSON.parse(String(f.mock.lastCall?.[1]?.body))).toMatchObject({ message: '¡Recordatorio guardado!', reply_parent_message_id: 'chat-id' })
     f.mockResolvedValueOnce(json({ data: [{ message_id: '', is_sent: false }] })); await expect(twitch.send('b', 'hello')).rejects.toThrow('rechazó')
     const prediction = { id: 'p', title: 'Question?', status: 'ACTIVE', created_at: new Date().toISOString(), outcomes: [{ id: 'y', title: 'Yes' }, { id: 'n', title: 'No' }] }
     f.mockImplementation(async () => json({ data: [prediction] }))

@@ -40,11 +40,12 @@ export function normalize (id: string, type: string, data: Record<string, unknow
   const userId = anonymous ? undefined : (data.chatter_user_id ?? data.user_id)
   const userName = anonymous ? undefined : (data.chatter_user_name ?? data.user_name)
   const message = z.object({ text: z.string() }).safeParse(data.message)
+  const chat = type === 'channel.chat.message' && typeof data.message_id === 'string' ? { chatMessageId: data.message_id } : {}
   const badges = z.array(z.object({ set_id: z.string() })).safeParse(data.badges)
   const reward = z.object({ id: z.string().optional(), type: z.string().optional() }).safeParse(data.reward)
   const admin = userId === broadcasterId || (identities.ownerId !== undefined && userId === identities.ownerId) || (badges.success && badges.data.some(b => b.set_id === 'moderator'))
   const status = type.endsWith('.end') ? data.status : type.endsWith('.lock') ? 'LOCKED' : 'ACTIVE'
-  return { id, type: internal === 'twitch.automatic_reward.redeemed.v1' && reward.success && reward.data.type === 'send_highlighted_message' ? 'twitch.message.highlighted.v1' : internal, at, data: { provider: type, providerId: id, ...(typeof userId === 'string' ? { userId } : {}), ...(typeof userName === 'string' ? { userName } : {}), anonymous, admin, self: identities.botId !== undefined && userId === identities.botId, ...(message.success ? { text: message.data.text } : {}), ...(reward.success ? { rewardId: reward.data.id, rewardType: reward.data.type } : {}), isGift: data.is_gift === true, payment: type === 'channel.bits.use' ? 'bits' : type.includes('reward') ? 'channel_points' : null, subtype: data.type ?? null, ...(internal === 'prediction.state.changed.v1' ? { id: data.id, status: String(status).toUpperCase() } : {}), raw: data } }
+  return { id, type: internal === 'twitch.automatic_reward.redeemed.v1' && reward.success && reward.data.type === 'send_highlighted_message' ? 'twitch.message.highlighted.v1' : internal, at, data: { provider: type, providerId: id, ...chat, ...(typeof userId === 'string' ? { userId } : {}), ...(typeof userName === 'string' ? { userName } : {}), anonymous, admin, self: identities.botId !== undefined && userId === identities.botId, ...(message.success ? { text: message.data.text } : {}), ...(reward.success ? { rewardId: reward.data.id, rewardType: reward.data.type } : {}), isGift: data.is_gift === true, payment: type === 'channel.bits.use' ? 'bits' : type.includes('reward') ? 'channel_points' : null, subtype: data.type ?? null, ...(internal === 'prediction.state.changed.v1' ? { id: data.id, status: String(status).toUpperCase() } : {}), raw: data } }
 }
 export async function reconcileSubscriptions (twitch: Twitch, broadcasterId: string) {
   const bot = await twitch.access('bot')

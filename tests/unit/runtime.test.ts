@@ -9,6 +9,7 @@ import { addReminder } from '../../packages/features/src/reminders.js'
 import type { Riot } from '../../packages/infrastructure/src/adapters/riot.js'
 import type { ExternalPrediction, PredictionsPort } from '../../packages/features/src/predictions.js'
 import { ProviderError } from '../../packages/infrastructure/src/adapters/http.js'
+import { normalize } from '../../packages/infrastructure/src/adapters/eventsub.js'
 const now = 1_000_000
 const actor = { id: 'u', name: 'Mod', admin: true }
 const game = { id: 'LA2_1', startedAt: now - 1000, observedAt: now, queue: 420 }
@@ -24,7 +25,7 @@ class Memory implements StateStore {
 }
 let store: Memory
 let riot: { result: ReturnType<typeof vi.fn<Riot['result']>>, history: ReturnType<typeof vi.fn<Riot['history']>>, poll: ReturnType<typeof vi.fn<Riot['poll']>>, lol: ReturnType<typeof vi.fn<Riot['lol']>> }
-let twitch: { send: ReturnType<typeof vi.fn<(id: string, text: string) => Promise<string>>>, user: ReturnType<typeof vi.fn<(login: string) => Promise<{ id: string, login: string, display_name: string }>>> }
+let twitch: { send: ReturnType<typeof vi.fn<(id: string, text: string, replyTo?: string) => Promise<string>>>, user: ReturnType<typeof vi.fn<(login: string) => Promise<{ id: string, login: string, display_name: string }>>> }
 let predictions: PredictionsPort & { list: ReturnType<typeof vi.fn<PredictionsPort['list']>>, create: ReturnType<typeof vi.fn<PredictionsPort['create']>>, update: ReturnType<typeof vi.fn<PredictionsPort['update']>> }
 let runtime: Runtime
 beforeEach(() => {
@@ -135,14 +136,36 @@ describe('prediction operations and recovery', () => {
   })
 })
 describe('chat delivery', () => {
+  it('replies to the original Twitch message when saving a reminder', async () => {
+    const command = normalize('event-id', 'channel.chat.message', {
+      broadcaster_user_id: 'b',
+      chatter_user_id: 'b',
+      chatter_user_name: 'Streamer',
+      message_id: 'chat-id',
+      message: { text: '!recordar revisar el partido' }
+    }, now, 'b')
+    await store.emit(() => [command])
+    await runtime.deliverMessages(now)
+    expect(twitch.send).toHaveBeenCalledWith('b', '¡Recordatorio guardado!', 'chat-id')
+    expect(store.state.reminders['event-id']?.text).toBe('revisar el partido')
+  })
+  it('lets later chat messages through if Twitch rejects a reply to a missing message', async () => {
+    message(store.state, 'reply', '¡Recordatorio guardado!', now, undefined, 'deleted-chat-id')
+    message(store.state, 'next', 'Siguiente mensaje', now + 1)
+    twitch.send.mockRejectedValueOnce(new ProviderError(404))
+    await runtime.deliverMessages(now)
+    await runtime.deliverMessages(now)
+    expect(store.state.messages.reply).toBeUndefined()
+    expect(twitch.send).toHaveBeenLastCalledWith('b', 'Siguiente mensaje', undefined)
+  })
   it('persists claims and remote IDs, sends in chronological order and marks reminder sent', async () => {
     store.state.tracking = 'idle'; addReminder(store.state, actor, 'r', 'a', now)
     message(store.state, 'b', 'second', now + 2); message(store.state, 'a', 'first', now)
     store.state.messages.a!.reminderId = 'r'
     await runtime.deliverMessages(now)
-    expect(twitch.send).toHaveBeenCalledWith('b', 'first')
+    expect(twitch.send).toHaveBeenCalledWith('b', 'first', undefined)
     expect(store.state.messages.a?.externalId).toBe('message-id'); expect(store.state.reminders.r?.status).toBe('sent')
-    await runtime.deliverMessages(now); expect(twitch.send).toHaveBeenLastCalledWith('b', 'second')
+    await runtime.deliverMessages(now); expect(twitch.send).toHaveBeenLastCalledWith('b', 'second', undefined)
   })
   it('marks crashed/uncertain effects as unknown without retrying, while definite rejections stay pending', async () => {
     store.state.tracking = 'idle'; addReminder(store.state, actor, 'r', 'a', now)
