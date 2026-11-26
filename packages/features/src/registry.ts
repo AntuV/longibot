@@ -6,22 +6,27 @@ import { predictionsEvent } from './predictions.js'
 import { answerTrivia, triviaCommand, storyCommand } from './games-play.js'
 
 import type { Command, CommandContext } from './commands.js'
-export interface Feature { name: string, events: string[], handle: (s: State, e: DomainEvent) => void, commands?: Record<string, Command>, enabled?: (s: State) => boolean, disabledMessage?: string }
+export interface Feature { name: string, events: string[], handle: (s: State, e: DomainEvent) => void, commands?: Record<string, Command>, enabled?: (s: State) => boolean }
 const all = ['*']
+const helpCommand: Command = ({ state, id, at }) => {
+  const available = registeredCommands(state)
+  const usage = ['!lol <campeón>', '!recordar <texto|lista|quitar id> (mods)']
+  if (available.includes('!pregunta')) usage.push('!pregunta <va|saltear> (mods)')
+  if (available.includes('!historia')) usage.push('!historia [@usuario]')
+  message(state, id, usage.join(' · '), at)
+}
 export const features: Feature[] = [
   { name: 'reminders', events: all, handle: remindersEvent, commands: { '!recordar': reminderCommand } },
   { name: 'predictions', events: ['game.started.v1', 'prediction.state.changed.v1'], handle: predictionsEvent },
-  { name: 'trivia', events: [], handle: () => {}, enabled: s => s.settings.trivia.enabled, disabledMessage: 'Trivia deshabilitada', commands: { '!pregunta': triviaCommand } },
-  { name: 'stories', events: [], handle: () => {}, enabled: s => s.settings.stories.enabled, disabledMessage: 'Historias deshabilitadas', commands: { '!historia': storyCommand } },
+  { name: 'trivia', events: [], handle: () => {}, enabled: s => s.settings.trivia.enabled, commands: { '!pregunta': triviaCommand } },
+  { name: 'stories', events: [], handle: () => {}, enabled: s => s.settings.stories.enabled, commands: { '!historia': storyCommand } },
   {
     name: 'channel-events',
     events: all,
     handle: channelEvent,
     commands: {
-      '!ayuda': ({ state: s, id, at }) => message(s, id, '!lol <campeón> · !recordar <texto|lista|quitar id> (mods) · !victorias · !pregunta (si está habilitada) · !historia (si está habilitada)', at),
-      '!comandos': context => features.find(f => f.name === 'channel-events')!.commands!['!ayuda']!(context),
-      '!victorias': ({ state: s, actor, id, at }) => { const wins = s.wins[actor.id]; message(s, id, `${actor.name}: trivia ${wins?.trivia ?? 0}, historias ${wins?.stories ?? 0}.`, at) },
-      '!config': ({ state: s, id, at }) => message(s, id, 'La configuración se administra en el panel seguro.', at),
+      '!ayuda': helpCommand,
+      '!comandos': helpCommand,
       '!lol': ({ state: s, id, at }) => message(s, id, 'Usá !lol <campeón>.', at)
     }
   }
@@ -32,8 +37,7 @@ export function chat (s: State, actor: Actor, id: string, text: string, at: numb
   const [root, ...args] = text.trim().split(/\s+/)
   try {
     const feature = (options.registry ?? features).find(f => f.commands?.[root?.toLowerCase() ?? ''])
-    if (!feature) return
-    if (feature.enabled && !feature.enabled(s)) throw new DomainError(feature.disabledMessage ?? 'Feature deshabilitada')
+    if (!feature || (feature.enabled && !feature.enabled(s))) return
     feature.commands![root!.toLowerCase()]!({ state: s, actor, id, args, at, random: options.random ?? Math.random(), guest: options.guest, replyTo: options.replyTo })
   } catch (error) {
     if (!(error instanceof DomainError)) throw error
@@ -49,8 +53,10 @@ function channelEvent (s: State, e: DomainEvent) {
     if (e.data.self === true) return
     if (typeof e.data.userId !== 'string' || typeof e.data.text !== 'string') return
     const actor = { id: e.data.userId, name: String(e.data.userName), admin: e.data.admin === true }
-    if (/^!(lol|historia)\s+/i.test(e.data.text)) s.chatTasks[e.id] ??= { id: e.id, actor, text: e.data.text, at: e.at }
-    else chat(s, actor, e.id, e.data.text, e.at, { replyTo: typeof e.data.chatMessageId === 'string' ? e.data.chatMessageId : undefined })
+    const deferredCommand = /^!(lol|historia)\s+/i.exec(e.data.text)?.[1]?.toLowerCase()
+    if (deferredCommand) {
+      if (deferredCommand === 'lol' || s.settings.stories.enabled) s.chatTasks[e.id] ??= { id: e.id, actor, text: e.data.text, at: e.at }
+    } else chat(s, actor, e.id, e.data.text, e.at, { replyTo: typeof e.data.chatMessageId === 'string' ? e.data.chatMessageId : undefined })
   }
   // Gifted subscriptions are represented by the grouped gift event only.
   if (e.type === 'twitch.subscription.started.v1' && e.data.isGift === true) return

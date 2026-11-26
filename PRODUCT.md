@@ -27,7 +27,7 @@ Es un bot hecho a medida para un canal y su comunidad, no un bot genérico multi
 
 - El directo es de League of Legends (SoloQ). El ritmo de trabajo lo marcan el inicio y el fin de cada partida.
 - Pantallas del panel: Resumen, Recordatorios, Predictions, Eventos y acciones, Configuración, Trivia e historias, Operación (worker, autorizaciones, entregas inciertas, errores, auditoría).
-- Comandos de chat: `!ayuda`, `!comandos`, `!lol <campeón>`, `!victorias`; para mods: `!recordar …`; con los módulos activos: `!pregunta va|saltear`, `!historia [@usuario]`.
+- Comandos de chat generales: `!ayuda`, `!comandos` y `!lol <campeón>`. Los moderadores pueden usar `!recordar …` y, si Trivia está activa, `!pregunta va|saltear`. Todo el chat puede usar `!historia [@usuario]` si Historias está activa.
 - Despliegue con Docker en Dokploy; en producción Nest sirve el panel en el mismo origen que la API.
 
 ## Capabilities and Constraints

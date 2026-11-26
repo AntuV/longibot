@@ -61,7 +61,7 @@ El agregado funcional de cada canal se guarda en `channel_state.data` como un do
 
 ## Comandos
 
-`!ayuda`, `!comandos`, `!lol <campeón>`, `!victorias`. Mods/streamer/propietario de chat: `!recordar <texto>`, `!recordar lista`, `!recordar quitar <id>`. Cuando se habilitan: `!pregunta va`, `!pregunta saltear` (mods) y `!historia [@usuario]`. La configuración se administra en el panel; `!config` nunca publica valores.
+`!ayuda`, `!comandos` y `!lol <campeón>`. Los moderadores, el streamer y el propietario configurado pueden usar `!recordar <texto>`, `!recordar lista` y `!recordar quitar <id>`. Cuando se habilitan los módulos correspondientes, también están disponibles `!pregunta va` y `!pregunta saltear` para esos roles, y `!historia [@usuario]` para todo el chat. `!ayuda` y `!comandos` muestran los juegos habilitados. El bot ignora los comandos de juegos deshabilitados. La configuración se administra en el panel.
 
 ## Migración y operación
 

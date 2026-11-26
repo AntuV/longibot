@@ -205,6 +205,8 @@ describe('external chat queries', () => {
   it('resolves guest identities and respects disabled stories before calling Twitch', async () => {
     store.state.chatTasks.story = { id: 'story', actor, text: '!historia @guest', at: now }
     await runtime.chatTasks(now); expect(twitch.user).not.toHaveBeenCalled()
+    expect(store.state.messages).toEqual({})
+    expect(store.state.chatTasks).toEqual({})
     store.state.settings.stories.enabled = true; store.state.chatTasks.story2 = { id: 'story2', actor, text: '!historia @guest', at: now }
     await runtime.chatTasks(now); expect(twitch.user).toHaveBeenCalledWith('guest'); expect(store.state.stories.story2?.users).toEqual(['u', 'guest'])
   })

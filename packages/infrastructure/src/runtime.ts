@@ -151,21 +151,27 @@ export class Runtime {
   async chatTasks (now: number) {
     const state = await this.store.read()
     for (const task of Object.values(state.chatTasks)) {
+      const [command, ...args] = task.text.split(/\s+/)
+      const isLol = command?.toLowerCase() === '!lol'
       try {
         const current = await this.store.read()
-        const [command, ...args] = task.text.split(/\s+/)
-        if (command?.toLowerCase() === '!lol') {
+        if (isLol) {
           if ((current.cooldowns.lol ?? 0) > now && !task.actor.admin) throw new DomainError('Consulta LoL en cooldown (120 segundos)', 429)
           if (!current.account) throw new DomainError('Cuenta Riot no configurada')
           await this.store.change(s => { s.cooldowns.lol = now + 120_000 })
           const result = await this.riot.lol(current.account, args.join(' '))
           await this.store.change(s => message(s, task.id, result, now))
-        } else {
-          if (!current.settings.stories.enabled) throw new DomainError('Historias deshabilitadas')
+        } else if (current.settings.stories.enabled) {
           const guest = await this.twitch.user(args[0]!.replace(/^@/, ''))
-          await this.store.change(s => playStory(s, task.actor, { id: guest.id, name: guest.display_name, admin: false }, task.id, now, Math.random()))
+          await this.store.change(s => {
+            if (s.settings.stories.enabled) playStory(s, task.actor, { id: guest.id, name: guest.display_name, admin: false }, task.id, now, Math.random())
+          })
         }
-      } catch (e) { await this.store.change(s => message(s, `error:${task.id}`, e instanceof DomainError ? e.message : 'No se pudo completar la consulta; intentá nuevamente.', now)) }
+      } catch (e) {
+        await this.store.change(s => {
+          if (isLol || s.settings.stories.enabled) message(s, `error:${task.id}`, e instanceof DomainError ? e.message : 'No se pudo completar la consulta; intentá nuevamente.', now)
+        })
+      }
       await this.store.change(s => { delete s.chatTasks[task.id] })
     }
   }

@@ -193,7 +193,12 @@ describe('feature composition and commands', () => {
     channel.handle(s, event('chat.message.received.v1', {})); expect(s.messages).toEqual({})
     channel.handle(s, event('chat.message.received.v1', { userId: '2', userName: 'V', text: '!lol Ahri' }, now, 'lol'))
     channel.handle(s, event('chat.message.received.v1', { userId: '2', userName: 'V', text: '!historia' }, now, 'story'))
-    expect(s.chatTasks.lol).toBeDefined(); expect(s.messages['error:story']?.text).toContain('deshabilitadas')
+    channel.handle(s, event('chat.message.received.v1', { userId: '2', userName: 'V', text: '!HISTORIA @guest' }, now, 'guest-story'))
+    expect(Object.keys(s.chatTasks)).toEqual(['lol'])
+    expect(s.messages).toEqual({})
+    s.settings.stories.enabled = true
+    channel.handle(s, event('chat.message.received.v1', { userId: '2', userName: 'V', text: '!HISTORIA @guest' }, now, 'enabled-story'))
+    expect(s.chatTasks['enabled-story']).toBeDefined()
   })
   it('uses primary gift signals, rule IDs and anonymous identities without duplicate messages', () => {
     const s = state(); const handler = features.find(f => f.name === 'channel-events')!.handle
@@ -218,17 +223,28 @@ describe('feature composition and commands', () => {
     chat(s, mod, 'list', '!recordar lista', now); expect(s.messages.list?.text).toContain('hello')
     chat(s, mod, 'cancel', '!recordar quitar 3', now); expect(s.reminders['3']?.status).toBe('canceled')
     chat(s, viewer, 'deny', '!recordar no', now); expect(s.messages['error:deny']?.text).toContain('moderador')
-    expect(s.messages['8']?.text).toContain('trivia 0')
-    expect(Object.values(s.messages).some(m => m.text.includes('secret'))).toBe(false)
-    for (const id of ['10', '11', '12', '13', '14']) expect(s.messages[id]).toBeUndefined()
+    expect(s.messages['0']?.text).toContain('!lol')
+    expect(s.messages['0']?.text).not.toMatch(/!victorias|!config|!historia|!pregunta/)
+    expect(s.messages['1']?.text).toBe(s.messages['0']?.text)
+    for (const id of ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14']) {
+      expect(s.messages[id]).toBeUndefined()
+      expect(s.messages[`error:${id}`]).toBeUndefined()
+    }
     s.settings.trivia.enabled = true; s.questions.q = { id: 'q', text: '?', answers: ['a'], used: 0 }
+    chat(s, viewer, 'trivia-commands', '!comandos', now)
+    expect(s.messages['trivia-commands']?.text).toContain('!pregunta <va|saltear> (mods)')
+    expect(s.messages['trivia-commands']?.text).not.toContain('!historia')
     chat(s, viewer, 'denytrivia', '!pregunta va', now)
     chat(s, mod, 'help', '!pregunta wrong', now)
     chat(s, mod, 'round', '!pregunta va', now)
     chat(s, mod, 'skip', '!pregunta saltear', now)
     expect(s.rounds.round?.status).toBe('skipped')
     s.settings.stories.enabled = true; chat(s, viewer, 'story', '!historia', now, { random: 0.2 })
-    chat(s, viewer, 'wins', '!victorias', now); expect(s.messages.wins?.text).toContain('historias 1')
+    expect(s.wins[viewer.id]?.stories).toBe(1)
+    s.settings.trivia.enabled = false
+    chat(s, viewer, 'story-commands', '!ayuda', now)
+    expect(s.messages['story-commands']?.text).toContain('!historia [@usuario]')
+    expect(s.messages['story-commands']?.text).not.toContain('!pregunta')
   })
 })
 
