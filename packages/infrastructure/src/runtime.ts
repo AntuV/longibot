@@ -1,5 +1,6 @@
 import { confirmGame, observeGame } from '../../features/src/games.js'
 import { message, DomainError } from '../../features/src/model.js'
+import type { ChatTask, ClipRequest } from '../../features/src/model.js'
 import { playStory, triviaTick, triviaDelivered } from '../../features/src/games-play.js'
 import type { PredictionsPort, ExternalPrediction } from '../../features/src/predictions.js'
 import type { Store } from './store.js'
@@ -12,7 +13,7 @@ export type StateStore = Pick<Store, 'read' | 'change' | 'emit' | 'deliver'>
 const predictionWindow = 300
 
 export class Runtime {
-  constructor (readonly store: StateStore, readonly riot: Pick<Riot, 'result' | 'history' | 'poll' | 'lol'>, readonly twitch: Pick<Twitch, 'announce' | 'send' | 'user'>, readonly predictions: PredictionsPort, readonly broadcasterId: string) {}
+  constructor (readonly store: StateStore, readonly riot: Pick<Riot, 'result' | 'history' | 'poll' | 'lol'>, readonly twitch: Pick<Twitch, 'announce' | 'send' | 'user' | 'createClip' | 'clipUrl'>, readonly predictions: PredictionsPort, readonly broadcasterId: string) {}
   async error (feature: string, error: unknown, now: number) {
     await this.store.change(s => { s.errors.push({ feature, at: now, message: error instanceof DomainError || error instanceof ProviderError ? error.message : 'Falla de integración; revisar conexión' }); s.errors = s.errors.slice(-100) })
   }
@@ -174,9 +175,54 @@ export class Runtime {
     }
   }
 
+  private async clipTask (task: ChatTask, clip: ClipRequest, now: number) {
+    const unconfirmed = 'No pude confirmar que Twitch haya creado el clip.'
+    const finish = (text: string) => this.store.change(s => {
+      message(s, task.id, text, now, undefined, clip.replyTo)
+      delete s.chatTasks[task.id]
+    })
+    if (clip.submitted) {
+      const { at, clipId } = clip.submitted
+      if (!clipId) {
+        await finish(unconfirmed)
+        return
+      }
+      let url: string | undefined
+      try { url = await this.twitch.clipUrl(clipId) } catch (error) { await this.error('clips', error, now) }
+      if (url) await finish(`¡Clip creado! ${url}`)
+      else if (now - at >= 60_000) await finish(unconfirmed)
+      return
+    }
+    if (now - task.at >= 30_000) {
+      await finish('El pedido de clip llegó tarde. Volvé a usar !clip para capturar el momento actual.')
+      return
+    }
+    // Persist the claim before calling Twitch so a worker restart cannot create a duplicate.
+    const claimed = await this.store.change(s => {
+      const pending = s.chatTasks[task.id]?.clip
+      if (!pending || pending.submitted) return false
+      pending.submitted = { at: now }
+      return true
+    })
+    if (!claimed) return
+    let clipId: string
+    try {
+      clipId = await this.twitch.createClip(this.broadcasterId, clip.title)
+    } catch (error) {
+      await finish(error instanceof DomainError ? error.message : unconfirmed)
+      await this.error('clips', error, now)
+      return
+    }
+    await this.store.change(s => { s.chatTasks[task.id]!.clip!.submitted = { at: now, clipId } })
+  }
+
   async chatTasks (now: number) {
     const state = await this.store.read()
     for (const task of Object.values(state.chatTasks)) {
+      if (task.clip) {
+        await this.clipTask(task, task.clip, now)
+        continue
+      }
       const [command, ...args] = task.text.split(/\s+/)
       const isLol = command?.toLowerCase() === '!lol'
       try {

@@ -100,6 +100,29 @@ describe('EventSub signatures and normalization', () => {
   })
 })
 describe('Twitch HTTP adapter', () => {
+  it('creates a titled live clip with the channel token and looks up its public URL', async () => {
+    const url = 'https://clips.twitch.tv/clip-id'
+    const f = fetcher()
+      .mockResolvedValueOnce(json({ data: [{ id: 'clip-id', edit_url: `${url}/edit` }] }, 202))
+      .mockResolvedValueOnce(json({ data: [{ id: 'clip-id', url }] }))
+      .mockResolvedValueOnce(json({}, 401))
+      .mockResolvedValueOnce(json({}, 404))
+    const twitch = new Twitch({} as Store, config, new Http(f))
+    const access = vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'channel-token', userId: 'b' })
+    const title = '¡Qué jugada! & GG'
+    await expect(twitch.createClip('b', title)).resolves.toBe('clip-id')
+    expect(access).toHaveBeenCalledWith('broadcaster', 'b')
+    const [requestUrl, init] = f.mock.calls[0]!
+    const endpoint = new URL(String(requestUrl))
+    expect(endpoint.pathname).toBe('/helix/clips')
+    expect(Object.fromEntries(endpoint.searchParams)).toEqual({ broadcaster_id: 'b', title })
+    expect(init).toMatchObject({ method: 'POST', headers: { Authorization: 'Bearer channel-token' } })
+    await expect(twitch.clipUrl('clip-id')).resolves.toBe(url)
+    expect(f).toHaveBeenLastCalledWith('https://api.twitch.tv/helix/clips?id=clip-id', expect.objectContaining({ method: 'GET', headers: expect.objectContaining({ Authorization: 'Bearer app' }) }))
+    await expect(twitch.createClip('b', title)).rejects.toThrow('Reconectá la cuenta del canal')
+    await expect(twitch.createClip('b', title)).rejects.toThrow('en vivo')
+  })
+
   it('posts an orange announcement as the bot and falls back only on permission rejection', async () => {
     const f = fetcher()
     const twitch = new Twitch({} as Store, config, new Http(f))

@@ -26,17 +26,75 @@ class Memory implements StateStore {
 }
 let store: Memory
 let riot: { result: ReturnType<typeof vi.fn<Riot['result']>>, history: ReturnType<typeof vi.fn<Riot['history']>>, poll: ReturnType<typeof vi.fn<Riot['poll']>>, lol: ReturnType<typeof vi.fn<Riot['lol']>> }
-let twitch: { [K in 'announce' | 'send' | 'user']: ReturnType<typeof vi.fn<Twitch[K]>> }
+let twitch: { [K in 'announce' | 'send' | 'user' | 'createClip' | 'clipUrl']: ReturnType<typeof vi.fn<Twitch[K]>> }
 let predictions: PredictionsPort & { list: ReturnType<typeof vi.fn<PredictionsPort['list']>>, create: ReturnType<typeof vi.fn<PredictionsPort['create']>>, update: ReturnType<typeof vi.fn<PredictionsPort['update']>> }
 let runtime: Runtime
 beforeEach(() => {
   store = new Memory()
   riot = { result: vi.fn().mockResolvedValue(null), poll: vi.fn().mockResolvedValue(null), history: vi.fn().mockResolvedValue([]), lol: vi.fn().mockResolvedValue('LoL result') }
-  twitch = { announce: vi.fn().mockResolvedValue(undefined), send: vi.fn().mockResolvedValue('message-id'), user: vi.fn().mockResolvedValue({ id: 'guest', display_name: 'Guest', login: 'guest' }) }
+  twitch = {
+    announce: vi.fn().mockResolvedValue(undefined),
+    send: vi.fn().mockResolvedValue('message-id'),
+    user: vi.fn().mockResolvedValue({ id: 'guest', display_name: 'Guest', login: 'guest' }),
+    createClip: vi.fn().mockResolvedValue('example'),
+    clipUrl: vi.fn().mockResolvedValue(undefined)
+  }
   predictions = { list: vi.fn().mockResolvedValue([]), create: vi.fn().mockResolvedValue(external), update: vi.fn().mockImplementation(async (_id, status) => ({ ...external, status })) }
   runtime = new Runtime(store, riot, twitch, predictions, 'b')
 })
 async function start () { store.state.account = account; await store.emit(s => observeGame(s, game, now)) }
+describe('!clip', () => {
+  const command = (id: string, text: string, admin = true) => store.emit(() => [{
+    id,
+    type: 'chat.message.received.v1',
+    at: now,
+    data: { userId: actor.id, userName: actor.name, admin, text, chatMessageId: `chat-${id}` }
+  }])
+
+  it('requires a title and moderator permissions', async () => {
+    await command('viewer', '!clip Una jugada', false)
+    await command('empty', '!clip   ')
+    await runtime.chatTasks(now)
+    expect(store.state.messages['error:viewer']?.text).toContain('moderador')
+    expect(store.state.messages['error:empty']?.text).toBe('Usá !clip <título>.')
+    expect(twitch.createClip).not.toHaveBeenCalled()
+  })
+
+  it('preserves the title and posts only the confirmed public URL as a reply', async () => {
+    const url = 'https://clips.twitch.tv/example'
+    await command('clip', '!CLIP  ¡Qué  jugada! & GG  ')
+    await runtime.tick(now)
+    expect(twitch.createClip).toHaveBeenCalledExactlyOnceWith('b', '¡Qué  jugada! & GG')
+    await runtime.tick(now + 2000)
+    expect(twitch.clipUrl).toHaveBeenCalledWith('example')
+    expect(twitch.send).not.toHaveBeenCalled()
+    twitch.clipUrl.mockResolvedValueOnce(url)
+    await runtime.tick(now + 4000)
+    expect(twitch.send).toHaveBeenCalledExactlyOnceWith('b', `¡Clip creado! ${url}`, 'chat-clip')
+    expect(twitch.createClip).toHaveBeenCalledTimes(1)
+    expect(store.state.chatTasks).toEqual({})
+  })
+
+  it('ends unconfirmed requests without resubmitting the creation', async () => {
+    await command('clip', '!clip Una jugada')
+    await runtime.chatTasks(now)
+    await runtime.chatTasks(now + 60_000)
+    expect(twitch.createClip).toHaveBeenCalledTimes(1)
+    expect(store.state.messages.clip?.text).toContain('No pude confirmar')
+    expect(store.state.chatTasks).toEqual({})
+  })
+
+  it('skips stale commands and never resubmits a clip interrupted during creation', async () => {
+    await command('interrupted', '!clip Una jugada')
+    store.state.chatTasks.interrupted!.clip!.submitted = { at: now }
+    await command('stale', '!clip Una jugada')
+    await runtime.chatTasks(now + 30_000)
+    expect(twitch.createClip).not.toHaveBeenCalled()
+    expect(store.state.messages.interrupted?.text).toContain('No pude confirmar')
+    expect(store.state.messages.stale?.text).toContain('llegó tarde')
+    expect(store.state.chatTasks).toEqual({})
+  })
+})
 describe('Riot polling and downtime reconciliation', () => {
   it('respects tracking flags and only-live settings', async () => {
     await runtime.poll(now); expect(riot.poll).not.toHaveBeenCalled()

@@ -5,7 +5,7 @@ import type { Twitch } from './adapters/twitch.js'
 
 export const scopes = {
   dashboard: ['user:read:moderated_channels'],
-  broadcaster: ['channel:manage:predictions', 'channel:read:redemptions', 'bits:read', 'channel:read:subscriptions', 'moderator:read:followers', 'channel:bot'],
+  broadcaster: ['channel:manage:predictions', 'channel:read:redemptions', 'bits:read', 'channel:read:subscriptions', 'moderator:read:followers', 'channel:bot', 'clips:edit'],
   bot: ['user:read:chat', 'user:write:chat', 'user:bot', 'moderator:manage:announcements']
 } as const
 export type Purpose = keyof typeof scopes

@@ -216,7 +216,7 @@ describe('feature composition and commands', () => {
   })
   it('routes commands, errors, disabled games and help without retired features', () => {
     const s = state()
-    for (const [i, text] of ['!ayuda', '!comandos', '!recordar lista', '!recordar hello', '!recordar quitar missing', '!pregunta va', '!historia', '!historia @nobody', '!victorias', '!config get secret', '!anime', '!tts', '!clip', '!puntos', '!apuesta', 'ordinary'].entries()) chat(s, mod, String(i), text, now)
+    for (const [i, text] of ['!ayuda', '!comandos', '!recordar lista', '!recordar hello', '!recordar quitar missing', '!pregunta va', '!historia', '!historia @nobody', '!victorias', '!config get secret', '!anime', '!tts', '!desconocido', '!puntos', '!apuesta', 'ordinary'].entries()) chat(s, mod, String(i), text, now)
     expect(s.messages['2']?.text).toContain('Sin recordatorios')
     expect(s.reminders['3']?.text).toBe('hello')
     expect(s.messages['3']?.text).toBe('¡Recordatorio guardado!')
@@ -224,6 +224,7 @@ describe('feature composition and commands', () => {
     chat(s, mod, 'cancel', '!recordar quitar 3', now); expect(s.reminders['3']?.status).toBe('canceled')
     chat(s, viewer, 'deny', '!recordar no', now); expect(s.messages['error:deny']?.text).toContain('moderador')
     expect(s.messages['0']?.text).toContain('!lol')
+    expect(s.messages['0']?.text).toContain('!clip <título> (mods)')
     expect(s.messages['0']?.text).not.toMatch(/!victorias|!config|!historia|!pregunta/)
     expect(s.messages['1']?.text).toBe(s.messages['0']?.text)
     for (const id of ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14']) {

@@ -18,6 +18,8 @@ export interface Prediction { gameId: string, status: string, twitchId?: string,
 export interface Question { id: string, text: string, answers: string[], used: number }
 export interface Round { id: string, questionId: string, expiresAt: number, status: 'pending' | 'active' | 'won' | 'expired' | 'skipped', winner?: string }
 export interface Message { id: string, text: string, status: 'pending' | 'sending' | 'sent' | 'unknown', createdAt: number, attempts: number, reminderId?: string, feature?: 'trivia' | 'stories', externalId?: string, replyTo?: string, predictionInvite?: { gameId: string, expiresAt: number } }
+export interface ClipRequest { title: string, replyTo?: string | undefined, submitted?: { at: number, clipId?: string } }
+export interface ChatTask { id: string, actor: Actor, text: string, at: number, clip?: ClipRequest }
 export interface State {
   version: 1
   settings: Settings
@@ -34,7 +36,7 @@ export interface State {
   wins: Record<string, { trivia: number, stories: number, name: string }>
   winResults: string[]
   cooldowns: Record<string, number>
-  chatTasks: Record<string, { id: string, actor: Actor, text: string, at: number }>
+  chatTasks: Record<string, ChatTask>
   messages: Record<string, Message>
   nextTriviaAt: number
   triviaNoticeAt?: number

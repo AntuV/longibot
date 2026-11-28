@@ -109,6 +109,29 @@ export class Twitch {
     }
   }
 
+  async createClip (broadcasterId: string, title: string) {
+    const query = new URLSearchParams({ broadcaster_id: broadcasterId, title })
+    try {
+      const access = await this.access('broadcaster', broadcasterId)
+      const result = z.object({ data: z.tuple([z.object({ id: z.string().min(1) })]) }).parse(await this.helix(`clips?${query}`, access.token, 'POST'))
+      return result.data[0].id
+    } catch (error) {
+      if ((error instanceof ProviderError && error.status === 401) || (error instanceof DomainError && error.status === 503)) {
+        throw new DomainError('Reconectá la cuenta del canal en el panel para autorizar la creación de clips.', 401)
+      }
+      if (error instanceof ProviderError && error.status === 404) throw new DomainError('El canal tiene que estar en vivo para crear un clip.', 404)
+      if (error instanceof ProviderError && error.status === 403) throw new DomainError('Twitch restringió la creación de clips en este canal.', 403)
+      if (error instanceof ProviderError && error.status === 400) throw new DomainError('Twitch rechazó el clip. Revisá el título y si la categoría permite clips.')
+      if (error instanceof ProviderError && error.status === 429) throw new DomainError('Twitch limitó las solicitudes. Esperá un momento y volvé a usar !clip.', 429)
+      throw error
+    }
+  }
+
+  async clipUrl (clipId: string) {
+    const result = z.object({ data: z.array(z.object({ id: z.string(), url: z.url({ protocol: /^https$/ }) })) }).parse(await this.helix(`clips?id=${encodeURIComponent(clipId)}`, await this.appAccess()))
+    return result.data.find(clip => clip.id === clipId)?.url
+  }
+
   async send (broadcasterId: string, message: string, replyTo?: string) {
     const access = await this.access('bot')
     const r = z.object({ data: z.array(z.object({ message_id: z.string(), is_sent: z.boolean() })) }).parse(await this.helix('chat/messages', access.token, 'POST', { broadcaster_id: broadcasterId, sender_id: access.userId, message, ...(replyTo ? { reply_parent_message_id: replyTo } : {}) }))
