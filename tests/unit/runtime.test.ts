@@ -7,6 +7,7 @@ import { consumers } from '../../packages/features/src/registry.js'
 import { observeGame } from '../../packages/features/src/games.js'
 import { addReminder } from '../../packages/features/src/reminders.js'
 import type { Riot } from '../../packages/infrastructure/src/adapters/riot.js'
+import type { Twitch } from '../../packages/infrastructure/src/adapters/twitch.js'
 import type { ExternalPrediction, PredictionsPort } from '../../packages/features/src/predictions.js'
 import { ProviderError } from '../../packages/infrastructure/src/adapters/http.js'
 import { normalize } from '../../packages/infrastructure/src/adapters/eventsub.js'
@@ -25,13 +26,13 @@ class Memory implements StateStore {
 }
 let store: Memory
 let riot: { result: ReturnType<typeof vi.fn<Riot['result']>>, history: ReturnType<typeof vi.fn<Riot['history']>>, poll: ReturnType<typeof vi.fn<Riot['poll']>>, lol: ReturnType<typeof vi.fn<Riot['lol']>> }
-let twitch: { send: ReturnType<typeof vi.fn<(id: string, text: string, replyTo?: string) => Promise<string>>>, user: ReturnType<typeof vi.fn<(login: string) => Promise<{ id: string, login: string, display_name: string }>>> }
+let twitch: { [K in 'announce' | 'send' | 'user']: ReturnType<typeof vi.fn<Twitch[K]>> }
 let predictions: PredictionsPort & { list: ReturnType<typeof vi.fn<PredictionsPort['list']>>, create: ReturnType<typeof vi.fn<PredictionsPort['create']>>, update: ReturnType<typeof vi.fn<PredictionsPort['update']>> }
 let runtime: Runtime
 beforeEach(() => {
   store = new Memory()
   riot = { result: vi.fn().mockResolvedValue(null), poll: vi.fn().mockResolvedValue(null), history: vi.fn().mockResolvedValue([]), lol: vi.fn().mockResolvedValue('LoL result') }
-  twitch = { send: vi.fn().mockResolvedValue('message-id'), user: vi.fn().mockResolvedValue({ id: 'guest', display_name: 'Guest', login: 'guest' }) }
+  twitch = { announce: vi.fn().mockResolvedValue(undefined), send: vi.fn().mockResolvedValue('message-id'), user: vi.fn().mockResolvedValue({ id: 'guest', display_name: 'Guest', login: 'guest' }) }
   predictions = { list: vi.fn().mockResolvedValue([]), create: vi.fn().mockResolvedValue(external), update: vi.fn().mockImplementation(async (_id, status) => ({ ...external, status })) }
   runtime = new Runtime(store, riot, twitch, predictions, 'b')
 })
@@ -82,6 +83,24 @@ describe('prediction operations and recovery', () => {
     predictions.list.mockResolvedValue([external]); await runtime.reconcilePredictions(now + 301_000)
     expect(predictions.create).toHaveBeenCalledOnce(); expect(predictions.update).not.toHaveBeenCalled()
   })
+  it('announces an opened prediction once, including after reconciliation', async () => {
+    await start()
+    await runtime.tick(now)
+    expect(twitch.announce).toHaveBeenCalledWith('b', '¡Se abrió la predicción! ¿Gana esta partida? Elegí tu opción con puntos del canal desde el chat.')
+    expect(store.state.messages['prediction:invite:t']?.status).toBe('sent')
+    predictions.list.mockResolvedValue([external])
+    await runtime.tick(now + 2000)
+    expect(twitch.announce).toHaveBeenCalledOnce()
+    expect(twitch.send).not.toHaveBeenCalled()
+  })
+  it.each(['expired', 'locked'])('drops an invitation when the prediction is %s before delivery', async reason => {
+    await start()
+    await runtime.reconcilePredictions(now)
+    if (reason === 'locked') store.state.predictions[game.id]!.status = 'LOCKED'
+    await runtime.deliverMessages(reason === 'expired' ? now + 300_000 : now)
+    expect(twitch.announce).not.toHaveBeenCalled()
+    expect(store.state.messages['prediction:invite:t']).toBeUndefined()
+  })
   it.each(['win', 'loss', 'remake'] as const)('automatically settles %s after confirmed game end', async outcome => {
     await start(); await runtime.reconcilePredictions(now)
     store.state.games[game.id]!.endedAt = now + 10_000; store.state.games[game.id]!.result = outcome
@@ -121,6 +140,7 @@ describe('prediction operations and recovery', () => {
     await runtime.reconcilePredictions(now); expect(store.state.predictions[game.id]?.status).toBe('creation_unknown')
     predictions.list.mockResolvedValue([external]); await runtime.reconcilePredictions(now)
     expect(predictions.create).toHaveBeenCalledOnce()
+    expect(store.state.messages).toEqual({})
     store.state.predictions[game.id]!.status = 'creating'; await runtime.reconcilePredictions(now)
     expect(store.state.predictions[game.id]?.status).toBe('creation_unknown')
     store.state.predictions[game.id]!.status = 'pending'; predictions.list.mockResolvedValue([]); predictions.create.mockRejectedValue(new ProviderError(409))

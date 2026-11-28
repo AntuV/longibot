@@ -100,6 +100,31 @@ describe('EventSub signatures and normalization', () => {
   })
 })
 describe('Twitch HTTP adapter', () => {
+  it('posts an orange announcement as the bot and falls back only on permission rejection', async () => {
+    const f = fetcher()
+    const twitch = new Twitch({} as Store, config, new Http(f))
+    const access = vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'bot-token', userId: 'bot' })
+    const invitation = '¡Participá en la predicción!'
+    f.mockResolvedValueOnce(new Response(null, { status: 204 }))
+    await expect(twitch.announce('b', invitation)).resolves.toBeUndefined()
+    expect(access).toHaveBeenCalledWith('bot')
+    expect(f).toHaveBeenCalledWith('https://api.twitch.tv/helix/chat/announcements?broadcaster_id=b&moderator_id=bot', expect.objectContaining({
+      method: 'POST',
+      headers: expect.objectContaining({ Authorization: 'Bearer bot-token' }),
+      body: JSON.stringify({ message: invitation, color: 'orange' })
+    }))
+
+    for (const status of [401, 403]) {
+      f.mockResolvedValueOnce(json({}, status)).mockResolvedValueOnce(json({ data: [{ message_id: 'fallback', is_sent: true }] }))
+      await expect(twitch.announce('b', invitation)).resolves.toBe('fallback')
+      expect(f.mock.lastCall?.[0]).toBe('https://api.twitch.tv/helix/chat/messages')
+      expect(JSON.parse(String(f.mock.lastCall?.[1]?.body))).toEqual({ broadcaster_id: 'b', sender_id: 'bot', message: invitation })
+    }
+    f.mockRejectedValueOnce(new Error('connection lost'))
+    await expect(twitch.announce('b', invitation)).rejects.toMatchObject({ status: 0 })
+    expect(f).toHaveBeenCalledTimes(6)
+  })
+
   it('handles app tokens, identity, validation, chat acknowledgements and prediction operations', async () => {
     const f = fetcher(); const twitch = new Twitch({} as Store, config, new Http(f))
     expect(await twitch.appAccess()).toBe('app'); expect(await twitch.appAccess()).toBe('app')

@@ -53,6 +53,8 @@ El bot no promete entrega exactamente una vez a una API externa. Un recordatorio
 
 Una creación de prediction con respuesta incierta queda en `creation_unknown`: verificar la prediction existente en Twitch y vincular su ID desde el panel. No se crea otra a ciegas. Las operaciones posteriores consultan Twitch, incluso por ID si el vínculo ya no figura en la última página, y respetan estados terminales manuales. Los conflictos con predictions ajenas no las cancelan.
 
+Al abrir una prediction automática, LongiBot invita a participar con un anuncio naranja. La cuenta del bot debe ser moderadora y haber autorizado `moderator:manage:announcements`. Si ya estaba conectada, volver a autorizarla desde Resumen. Ante un rechazo de permisos de Twitch, el bot envía la invitación como mensaje normal.
+
 Spectator ausente no confirma fin. Match-V5 confirma fin y resultado separadamente: un fin confirmado entrega recordatorios aunque el ganador sea desconocido. `gameEndedInEarlySurrender` identifica un remake; el bot cancela la prediction y Twitch gestiona el reembolso. Una partida corta sin esa señal no se convierte automáticamente en remake ni en ganador.
 
 Los recordatorios conservan intención y timestamp cuando Riot falla. Se recuperan la partida activa y partidas terminadas durante una caída; los resultados históricos no abren predictions nuevas. Para elegir la primera partida después de encolar se exige historia completa en la ventana consultada. Si hay 20 o más partidas y no puede probarse cuál era la próxima, el bot conserva el ítem y registra la necesidad de revisión: no asigna arbitrariamente una más reciente. Cancelar/volver a encolar desde el panel solo tras revisar el destino deseado.

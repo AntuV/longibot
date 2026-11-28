@@ -9,8 +9,10 @@ import { matchResult } from './adapters/riot.js'
 import { ProviderError } from './adapters/http.js'
 
 export type StateStore = Pick<Store, 'read' | 'change' | 'emit' | 'deliver'>
+const predictionWindow = 300
+
 export class Runtime {
-  constructor (readonly store: StateStore, readonly riot: Pick<Riot, 'result' | 'history' | 'poll' | 'lol'>, readonly twitch: Pick<Twitch, 'send' | 'user'>, readonly predictions: PredictionsPort, readonly broadcasterId: string) {}
+  constructor (readonly store: StateStore, readonly riot: Pick<Riot, 'result' | 'history' | 'poll' | 'lol'>, readonly twitch: Pick<Twitch, 'announce' | 'send' | 'user'>, readonly predictions: PredictionsPort, readonly broadcasterId: string) {}
   async error (feature: string, error: unknown, now: number) {
     await this.store.change(s => { s.errors.push({ feature, at: now, message: error instanceof DomainError || error instanceof ProviderError ? error.message : 'Falla de integración; revisar conexión' }); s.errors = s.errors.slice(-100) })
   }
@@ -62,9 +64,13 @@ export class Runtime {
     const s = await this.store.read()
     if (!Object.values(s.predictions).some(p => !['skipped', 'RESOLVED', 'CANCELED', 'conflict'].includes(p.status))) return
     const external = await this.predictions.list()
-    const save = (gameId: string, p: ExternalPrediction) => this.store.change(state => {
+    const save = (gameId: string, p: ExternalPrediction, announceOpening = false) => this.store.change(state => {
       const link = state.predictions[gameId]!
       link.twitchId = p.id; link.status = p.status; link.outcomes = p.outcomes
+      if (announceOpening && p.status === 'ACTIVE') {
+        const invite = message(state, `prediction:invite:${p.id}`, `¡Se abrió la predicción! ${p.title} Elegí tu opción con puntos del canal desde el chat.`, now)
+        invite.predictionInvite = { gameId, expiresAt: p.createdAt + predictionWindow * 1000 }
+      }
     })
     for (const prediction of Object.values(s.predictions)) {
       if (['skipped', 'conflict', 'RESOLVED', 'CANCELED'].includes(prediction.status)) continue
@@ -87,9 +93,9 @@ export class Runtime {
         }
         await this.store.change(state => { const p = state.predictions[game.id]!; p.status = 'creating'; p.createdAt = now; p.creationOptions = [settings.yes, settings.no] })
         try {
-          const created = await this.predictions.create(settings.title, [settings.yes, settings.no], 300)
+          const created = await this.predictions.create(settings.title, [settings.yes, settings.no], predictionWindow)
           external.push(created)
-          await save(game.id, created)
+          await save(game.id, created, true)
         } catch (e) {
           await this.store.change(state => { const p = state.predictions[game.id]!; p.status = e instanceof ProviderError && e.status >= 400 && e.status < 500 ? 'conflict' : 'creation_unknown'; p.reason = 'Revisar Twitch antes de volver a operar' })
           await this.error('predictions', e, now)
@@ -127,17 +133,37 @@ export class Runtime {
       const m = s.messages[next.id]
       if (!m || m.status !== 'pending') return false
       if (m.feature && !s.settings[m.feature].enabled) { delete s.messages[m.id]; return false }
+      if (m.predictionInvite) {
+        const { gameId, expiresAt } = m.predictionInvite
+        if (!s.settings.predictions.enabled || s.predictions[gameId]?.status !== 'ACTIVE' || now >= expiresAt) {
+          delete s.messages[m.id]
+          return false
+        }
+      }
       m.status = 'sending'; m.attempts++
       if (m.reminderId) { const r = s.reminders[m.reminderId]!; r.status = 'sending'; r.attempts++ }
       return true
     })
     if (!claimed) return
     try {
-      const id = await this.twitch.send(this.broadcasterId, next.text, next.replyTo)
-      await this.store.change(s => { const m = s.messages[next.id]!; triviaDelivered(s, m.id, now); m.status = 'sent'; m.externalId = id; if (m.reminderId) { const r = s.reminders[m.reminderId]!; r.status = 'sent'; r.messageId = id } })
+      const id = next.predictionInvite
+        ? await this.twitch.announce(this.broadcasterId, next.text)
+        : await this.twitch.send(this.broadcasterId, next.text, next.replyTo)
+      await this.store.change(s => {
+        const m = s.messages[next.id]!
+        triviaDelivered(s, m.id, now)
+        m.status = 'sent'
+        if (id !== undefined) m.externalId = id
+        if (m.reminderId) {
+          const r = s.reminders[m.reminderId]!
+          r.status = 'sent'
+          if (id !== undefined) r.messageId = id
+        }
+      })
     } catch (e) {
       const status = e instanceof ProviderError || e instanceof DomainError ? e.status : undefined
-      if (next.replyTo && (status === 400 || status === 404 || status === 422)) {
+      const rejectedInvite = next.predictionInvite && status !== undefined && status >= 400 && status < 500 && status !== 429
+      if (rejectedInvite || (next.replyTo && (status === 400 || status === 404 || status === 422))) {
         await this.store.change(s => { delete s.messages[next.id] })
         await this.error('chat', e, now)
         return

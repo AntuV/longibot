@@ -4,7 +4,7 @@ import { DomainError } from '../../../features/src/model.js'
 import type { ExternalPrediction, PredictionsPort } from '../../../features/src/predictions.js'
 import { decrypt, encrypt } from '../crypto.js'
 import { Store } from '../store.js'
-import { Http } from './http.js'
+import { Http, ProviderError } from './http.js'
 
 const tokenSchema = z.object({ accessToken: z.string(), refreshToken: z.string().nullable(), expiresIn: z.number().nullable(), obtainmentTimestamp: z.number(), scope: z.array(z.string()) })
 export type Token = z.infer<typeof tokenSchema>
@@ -93,6 +93,19 @@ export class Twitch {
       get: async id => (await call('GET', undefined, id))[0] ?? null,
       create: async (title, options, window) => (await call('POST', { broadcaster_id: broadcasterId, title, outcomes: options.map(title => ({ title })), prediction_window: window }))[0]!,
       update: async (id, status, outcome) => (await call('PATCH', { broadcaster_id: broadcasterId, id, status, ...(outcome ? { winning_outcome_id: outcome } : {}) }))[0]!
+    }
+  }
+
+  async announce (broadcasterId: string, message: string) {
+    const access = await this.access('bot')
+    const query = new URLSearchParams({ broadcaster_id: broadcasterId, moderator_id: access.userId })
+    try {
+      await this.helix(`chat/announcements?${query}`, access.token, 'POST', { message, color: 'orange' })
+    } catch (error) {
+      if (error instanceof ProviderError && (error.status === 401 || error.status === 403)) {
+        return this.send(broadcasterId, message)
+      }
+      throw error
     }
   }
 

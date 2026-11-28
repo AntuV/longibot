@@ -17,7 +17,7 @@ export interface Reminder { id: string, text: string, author: string, createdAt:
 export interface Prediction { gameId: string, status: string, twitchId?: string, outcomes?: { id: string, title: string }[], createdAt: number, reason?: string, requested?: { status: 'LOCKED' | 'RESOLVED' | 'CANCELED', outcome?: string }, creationOptions?: [string, string] }
 export interface Question { id: string, text: string, answers: string[], used: number }
 export interface Round { id: string, questionId: string, expiresAt: number, status: 'pending' | 'active' | 'won' | 'expired' | 'skipped', winner?: string }
-export interface Message { id: string, text: string, status: 'pending' | 'sending' | 'sent' | 'unknown', createdAt: number, attempts: number, reminderId?: string, feature?: 'trivia' | 'stories', externalId?: string, replyTo?: string }
+export interface Message { id: string, text: string, status: 'pending' | 'sending' | 'sent' | 'unknown', createdAt: number, attempts: number, reminderId?: string, feature?: 'trivia' | 'stories', externalId?: string, replyTo?: string, predictionInvite?: { gameId: string, expiresAt: number } }
 export interface State {
   version: 1
   settings: Settings
@@ -49,6 +49,7 @@ export class DomainError extends Error {
 export function requireAdmin (actor: Actor) { if (!actor.admin) throw new DomainError('Se requiere moderador o streamer', 403) }
 export function message (state: State, id: string, text: string, at: number, feature?: 'trivia' | 'stories', replyTo?: string) {
   state.messages[id] ??= { id, text: text.slice(0, 480), createdAt: at, attempts: 0, status: 'pending', ...(feature ? { feature } : {}), ...(replyTo ? { replyTo } : {}) }
+  return state.messages[id]
 }
 export function win (state: State, resultId: string, actor: Actor, game: 'trivia' | 'stories') {
   const key = `${game}:${resultId}:${actor.id}`
