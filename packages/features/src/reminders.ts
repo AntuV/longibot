@@ -49,8 +49,8 @@ export function remindersEvent (s: State, e: DomainEvent) {
 
 export const reminderCommand: import('./commands.js').Command = ({ state: s, actor, id, args, at, replyTo }) => {
   requireAdmin(actor)
-  if (args[0] === 'lista') message(s, id, Object.values(s.reminders).filter(r => !['sent', 'canceled'].includes(r.status)).map(r => `${r.id}: ${r.text} [${r.status}]`).join(' | ') || 'Sin recordatorios pendientes.', at)
-  else if (args[0] === 'quitar') { cancelReminder(s, actor, args[1] ?? ''); message(s, id, 'Recordatorio cancelado.', at) } else {
+  if (args[0] === 'lista') message(s, id, Object.values(s.reminders).filter(r => !['sent', 'canceled'].includes(r.status)).map(r => `${r.id}: ${r.text} [${r.status}]`).join(' | ') || 'Sin recordatorios pendientes.', at, undefined, replyTo)
+  else if (args[0] === 'quitar') { cancelReminder(s, actor, args[1] ?? ''); message(s, id, 'Recordatorio cancelado.', at, undefined, replyTo) } else {
     addReminder(s, actor, id, args.join(' '), at)
     message(s, id, '¡Recordatorio guardado!', at, undefined, replyTo)
   }

@@ -43,23 +43,30 @@ beforeEach(() => {
   runtime = new Runtime(store, riot, twitch, predictions, 'b')
 })
 async function start () { store.state.account = account; await store.emit(s => observeGame(s, game, now)) }
-describe('!clip', () => {
-  const command = (id: string, text: string, admin = true) => store.emit(() => [{
-    id,
-    type: 'chat.message.received.v1',
-    at: now,
-    data: { userId: actor.id, userName: actor.name, admin, text, chatMessageId: `chat-${id}` }
-  }])
+const command = (id: string, text: string, admin = true) => store.emit(() => [{
+  id,
+  type: 'chat.message.received.v1',
+  at: now,
+  data: { userId: actor.id, userName: actor.name, admin, text, chatMessageId: `chat-${id}` }
+}])
 
-  it('requires a title and replies when Twitch says the requester does not follow the channel', async () => {
+describe('!clip', () => {
+  it('replies when Twitch says the requester does not follow the channel', async () => {
     twitch.createClip.mockResolvedValueOnce(undefined)
     await command('non-follower', '!clip Una jugada')
-    await command('empty', '!clip   ')
     await runtime.chatTasks(now)
     expect(store.state.messages['non-follower']).toMatchObject({ text: 'Para usar !clip tenés que seguir el canal.', replyTo: 'chat-non-follower' })
-    expect(store.state.messages['error:empty']?.text).toBe('Usá !clip <título>.')
     expect(twitch.createClip).toHaveBeenCalledExactlyOnceWith('b', 'Una jugada', actor.id)
     expect(store.state.chatTasks).toEqual({})
+  })
+
+  it('requests the stream title for a bare command and replies to the original message', async () => {
+    await command('untitled', '!clip   ')
+    await runtime.tick(now)
+    expect(twitch.createClip).toHaveBeenCalledExactlyOnceWith('b', undefined, actor.id)
+    twitch.clipUrl.mockResolvedValueOnce('https://clips.twitch.tv/example')
+    await runtime.tick(now + 2000)
+    expect(twitch.send).toHaveBeenCalledExactlyOnceWith('b', '¡Clip creado! https://clips.twitch.tv/example', 'chat-untitled')
   })
 
   it('preserves the title and posts only the confirmed public URL as a reply', async () => {
@@ -216,6 +223,30 @@ describe('prediction operations and recovery', () => {
   })
 })
 describe('chat delivery', () => {
+  it.each([
+    ['!ayuda', '!clip [título]'],
+    ['!lol  ', 'Usá !lol <campeón>.'],
+    ['!recordar lista', 'Sin recordatorios pendientes.'],
+    ['!recordar quitar missing', 'Recordatorio inexistente']
+  ])('replies to %s in the original thread', async (text, response) => {
+    await command('request', text)
+    await runtime.tick(now)
+    expect(twitch.send).toHaveBeenCalledExactlyOnceWith('b', expect.stringContaining(response), 'chat-request')
+  })
+
+  it('allows a new trivia round when Twitch rejects the question reply', async () => {
+    store.state.settings.trivia.enabled = true
+    store.state.questions.q = { id: 'q', text: 'Question?', answers: ['a'], used: 0 }
+    await command('old', '!pregunta va')
+    twitch.send.mockRejectedValueOnce(new ProviderError(404))
+    await runtime.deliverMessages(now)
+    expect(store.state.rounds.old?.status).toBe('skipped')
+    await command('new', '!pregunta va')
+    await runtime.deliverMessages(now)
+    expect(twitch.send).toHaveBeenLastCalledWith('b', 'Question?', 'chat-new')
+    expect(store.state.rounds.new?.status).toBe('active')
+  })
+
   it('replies to the original Twitch message when saving a reminder', async () => {
     const command = normalize('event-id', 'channel.chat.message', {
       broadcaster_user_id: 'b',
@@ -273,22 +304,27 @@ describe('chat delivery', () => {
 })
 describe('external chat queries', () => {
   it('handles LoL cooldown, missing account, errors and successful replies without permanent locks', async () => {
-    const queue = (id: string, admin = false) => { store.state.chatTasks[id] = { id, actor: { ...actor, admin }, text: '!lol ahri', at: now } }
-    queue('missing'); await runtime.chatTasks(now); expect(store.state.messages['error:missing']?.text).toContain('configurada')
-    store.state.account = account; queue('ok'); await runtime.chatTasks(now); expect(riot.lol).toHaveBeenCalledOnce()
-    queue('cooldown'); await runtime.chatTasks(now); expect(store.state.messages['error:cooldown']?.text).toContain('cooldown')
-    riot.lol.mockRejectedValue(new Error('secret')); queue('error', true); await runtime.chatTasks(now)
-    expect(store.state.messages['error:error']?.text).not.toContain('secret'); expect(store.state.chatTasks).toEqual({})
-    riot.lol.mockResolvedValue('recovered'); queue('recover'); await runtime.chatTasks(now + 121_000)
-    expect(store.state.messages.recover?.text).toBe('recovered')
+    await command('missing', '!lol ahri', false); await runtime.chatTasks(now)
+    expect(store.state.messages['error:missing']).toMatchObject({ text: expect.stringContaining('configurada'), replyTo: 'chat-missing' })
+    store.state.account = account; await command('ok', '!lol ahri', false); await runtime.chatTasks(now)
+    expect(riot.lol).toHaveBeenCalledOnce()
+    expect(store.state.messages.ok).toMatchObject({ text: 'LoL result', replyTo: 'chat-ok' })
+    await command('cooldown', '!lol ahri', false); await runtime.chatTasks(now)
+    expect(store.state.messages['error:cooldown']).toMatchObject({ text: expect.stringContaining('cooldown'), replyTo: 'chat-cooldown' })
+    riot.lol.mockRejectedValue(new Error('secret')); await command('error', '!lol ahri'); await runtime.chatTasks(now)
+    expect(store.state.messages['error:error']).toMatchObject({ text: 'No se pudo completar la consulta; intentá nuevamente.', replyTo: 'chat-error' })
+    expect(store.state.chatTasks).toEqual({})
+    riot.lol.mockResolvedValue('recovered'); await command('recover', '!lol ahri', false); await runtime.chatTasks(now + 121_000)
+    expect(store.state.messages.recover).toMatchObject({ text: 'recovered', replyTo: 'chat-recover' })
   })
   it('resolves guest identities and respects disabled stories before calling Twitch', async () => {
     store.state.chatTasks.story = { id: 'story', actor, text: '!historia @guest', at: now }
     await runtime.chatTasks(now); expect(twitch.user).not.toHaveBeenCalled()
     expect(store.state.messages).toEqual({})
     expect(store.state.chatTasks).toEqual({})
-    store.state.settings.stories.enabled = true; store.state.chatTasks.story2 = { id: 'story2', actor, text: '!historia @guest', at: now }
+    store.state.settings.stories.enabled = true; await command('story2', '!historia @guest')
     await runtime.chatTasks(now); expect(twitch.user).toHaveBeenCalledWith('guest'); expect(store.state.stories.story2?.users).toEqual(['u', 'guest'])
+    expect(store.state.messages['story:story2']?.replyTo).toBe('chat-story2')
   })
 })
 it('starts the trivia answer window only after acknowledged delivery and applies LoL cooldown within one batch', async () => {

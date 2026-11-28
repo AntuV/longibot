@@ -8,12 +8,12 @@ import { answerTrivia, triviaCommand, storyCommand } from './games-play.js'
 import type { Command, CommandContext } from './commands.js'
 export interface Feature { name: string, events: string[], handle: (s: State, e: DomainEvent) => void, commands?: Record<string, Command>, enabled?: (s: State) => boolean }
 const all = ['*']
-const helpCommand: Command = ({ state, id, at }) => {
+const helpCommand: Command = ({ state, id, at, replyTo }) => {
   const available = registeredCommands(state)
-  const usage = ['!lol <campeón>', '!recordar <texto|lista|quitar id> (mods)', '!clip <título> (seguidores)']
+  const usage = ['!lol <campeón>', '!recordar <texto|lista|quitar id> (mods)', '!clip [título] (seguidores)']
   if (available.includes('!pregunta')) usage.push('!pregunta <va|saltear> (mods)')
   if (available.includes('!historia')) usage.push('!historia [@usuario]')
-  message(state, id, usage.join(' · '), at)
+  message(state, id, usage.join(' · '), at, undefined, replyTo)
 }
 export const features: Feature[] = [
   {
@@ -36,18 +36,17 @@ export const features: Feature[] = [
     commands: {
       '!ayuda': helpCommand,
       '!comandos': helpCommand,
-      '!lol': ({ state: s, id, at }) => message(s, id, 'Usá !lol <campeón>.', at),
+      '!lol': ({ state: s, id, at, replyTo }) => message(s, id, 'Usá !lol <campeón>.', at, undefined, replyTo),
       '!clip': ({ state, actor, id, text, at, replyTo }) => {
         const title = text.slice('!clip'.length).trim()
-        if (!title) throw new DomainError('Usá !clip <título>.')
-        state.chatTasks[id] ??= { id, actor, text, at, clip: { title, replyTo } }
+        state.chatTasks[id] ??= { id, actor, text, at, replyTo, clip: title ? { title } : {} }
       }
     }
   }
 ]
 export function consumers (type: string, registry = features) { return registry.filter(f => f.events.includes('*') || f.events.includes(type)) }
 export function chat (s: State, actor: Actor, id: string, text: string, at: number, options: Partial<Pick<CommandContext, 'random' | 'guest' | 'replyTo'>> & { registry?: Feature[] } = {}) {
-  if (!text.startsWith('!')) { answerTrivia(s, actor, text, at); return }
+  if (!text.startsWith('!')) { answerTrivia(s, actor, text, at, options.replyTo); return }
   const [root, ...args] = text.trim().split(/\s+/)
   try {
     const feature = (options.registry ?? features).find(f => f.commands?.[root?.toLowerCase() ?? ''])
@@ -55,7 +54,7 @@ export function chat (s: State, actor: Actor, id: string, text: string, at: numb
     feature.commands![root!.toLowerCase()]!({ state: s, actor, id, text, args, at, random: options.random ?? Math.random(), guest: options.guest, replyTo: options.replyTo })
   } catch (error) {
     if (!(error instanceof DomainError)) throw error
-    message(s, `error:${id}`, error.message, at)
+    message(s, `error:${id}`, error.message, at, undefined, options.replyTo)
   }
 }
 export function registeredCommands (s: State, registry = features) { return registry.filter(f => !f.enabled || f.enabled(s)).flatMap(f => Object.keys(f.commands ?? {})) }
@@ -67,10 +66,11 @@ function channelEvent (s: State, e: DomainEvent) {
     if (e.data.self === true) return
     if (typeof e.data.userId !== 'string' || typeof e.data.text !== 'string') return
     const actor = { id: e.data.userId, name: String(e.data.userName), admin: e.data.admin === true }
-    const deferredCommand = /^!(lol|historia)\s+/i.exec(e.data.text)?.[1]?.toLowerCase()
+    const replyTo = typeof e.data.chatMessageId === 'string' ? e.data.chatMessageId : undefined
+    const deferredCommand = /^!(lol|historia)\s+\S/i.exec(e.data.text)?.[1]?.toLowerCase()
     if (deferredCommand) {
-      if (deferredCommand === 'lol' || s.settings.stories.enabled) s.chatTasks[e.id] ??= { id: e.id, actor, text: e.data.text, at: e.at }
-    } else chat(s, actor, e.id, e.data.text, e.at, { replyTo: typeof e.data.chatMessageId === 'string' ? e.data.chatMessageId : undefined })
+      if (deferredCommand === 'lol' || s.settings.stories.enabled) s.chatTasks[e.id] ??= { id: e.id, actor, text: e.data.text, at: e.at, replyTo }
+    } else chat(s, actor, e.id, e.data.text, e.at, { replyTo })
   }
   // Gifted subscriptions are represented by the grouped gift event only.
   if (e.type === 'twitch.subscription.started.v1' && e.data.isGift === true) return

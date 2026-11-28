@@ -123,6 +123,21 @@ describe('Twitch HTTP adapter', () => {
     await expect(twitch.createClip('b', title, 'b')).rejects.toThrow('en vivo')
   })
 
+  it('uses the current stream title for a clip without a title and handles an offline channel', async () => {
+    const title = 'Jugando ranked ✨'
+    const f = fetcher()
+      .mockResolvedValueOnce(json({ data: [{ title }] }))
+      .mockResolvedValueOnce(json({ data: [{ id: 'clip-id' }] }, 202))
+      .mockResolvedValueOnce(json({ data: [] }))
+    const twitch = new Twitch({} as Store, config, new Http(f))
+    vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'channel-token', userId: 'b' })
+    await expect(twitch.createClip('b', undefined, 'b')).resolves.toBe('clip-id')
+    expect(f).toHaveBeenNthCalledWith(1, 'https://api.twitch.tv/helix/streams?user_id=b', expect.objectContaining({ method: 'GET' }))
+    expect(Object.fromEntries(new URL(String(f.mock.calls[1]?.[0])).searchParams)).toEqual({ broadcaster_id: 'b', title })
+    await expect(twitch.createClip('b', undefined, 'b')).rejects.toThrow('en vivo')
+    expect(f.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
+  })
+
   it('checks the requester follows the channel before creating a clip', async () => {
     const f = fetcher()
       .mockResolvedValueOnce(json({ total: 0, data: [] }))
@@ -132,7 +147,7 @@ describe('Twitch HTTP adapter', () => {
     const twitch = new Twitch({} as Store, config, new Http(f))
     vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'channel-token', userId: 'b' })
     const title = 'Una jugada'
-    await expect(twitch.createClip('b', title, 'outsider')).resolves.toBeUndefined()
+    await expect(twitch.createClip('b', undefined, 'outsider')).resolves.toBeUndefined()
     expect(f).toHaveBeenCalledExactlyOnceWith(
       'https://api.twitch.tv/helix/channels/followers?broadcaster_id=b&user_id=outsider',
       expect.objectContaining({ method: 'GET', headers: expect.objectContaining({ Authorization: 'Bearer channel-token' }) })

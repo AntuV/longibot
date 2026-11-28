@@ -165,7 +165,13 @@ export class Runtime {
       const status = e instanceof ProviderError || e instanceof DomainError ? e.status : undefined
       const rejectedInvite = next.predictionInvite && status !== undefined && status >= 400 && status < 500 && status !== 429
       if (rejectedInvite || (next.replyTo && (status === 400 || status === 404 || status === 422))) {
-        await this.store.change(s => { delete s.messages[next.id] })
+        await this.store.change(s => {
+          delete s.messages[next.id]
+          if (next.feature === 'trivia' && next.id.startsWith('trivia:')) {
+            const round = s.rounds[next.id.slice('trivia:'.length)]
+            if (round?.status === 'pending') round.status = 'skipped'
+          }
+        })
         await this.error('chat', e, now)
         return
       }
@@ -178,7 +184,7 @@ export class Runtime {
   private async clipTask (task: ChatTask, clip: ClipRequest, now: number) {
     const unconfirmed = 'No pude confirmar que Twitch haya creado el clip.'
     const finish = (text: string) => this.store.change(s => {
-      message(s, task.id, text, now, undefined, clip.replyTo)
+      message(s, task.id, text, now, undefined, task.replyTo ?? clip.replyTo)
       delete s.chatTasks[task.id]
     })
     if (clip.submitted) {
@@ -236,16 +242,16 @@ export class Runtime {
           if (!current.account) throw new DomainError('Cuenta Riot no configurada')
           await this.store.change(s => { s.cooldowns.lol = now + 120_000 })
           const result = await this.riot.lol(current.account, args.join(' '))
-          await this.store.change(s => message(s, task.id, result, now))
+          await this.store.change(s => message(s, task.id, result, now, undefined, task.replyTo))
         } else if (current.settings.stories.enabled) {
           const guest = await this.twitch.user(args[0]!.replace(/^@/, ''))
           await this.store.change(s => {
-            if (s.settings.stories.enabled) playStory(s, task.actor, { id: guest.id, name: guest.display_name, admin: false }, task.id, now, Math.random())
+            if (s.settings.stories.enabled) playStory(s, task.actor, { id: guest.id, name: guest.display_name, admin: false }, task.id, now, Math.random(), task.replyTo)
           })
         }
       } catch (e) {
         await this.store.change(s => {
-          if (isLol || s.settings.stories.enabled) message(s, `error:${task.id}`, e instanceof DomainError ? e.message : 'No se pudo completar la consulta; intentá nuevamente.', now)
+          if (isLol || s.settings.stories.enabled) message(s, `error:${task.id}`, e instanceof DomainError ? e.message : 'No se pudo completar la consulta; intentá nuevamente.', now, undefined, task.replyTo)
         })
       }
       await this.store.change(s => { delete s.chatTasks[task.id] })

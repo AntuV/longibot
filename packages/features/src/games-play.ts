@@ -15,7 +15,7 @@ export function configure (s: State, actor: Actor, value: unknown, now = Date.no
   for (const m of Object.values(s.messages)) if (m.feature && !s.settings[m.feature].enabled && m.status === 'pending') delete s.messages[m.id]
   return s.settings
 }
-export function startTrivia (s: State, actor: Actor, id: string, now: number, random: number) {
+export function startTrivia (s: State, actor: Actor, id: string, now: number, random: number, replyTo?: string) {
   requireAdmin(actor)
   if (!s.settings.trivia.enabled) throw new DomainError('Trivia deshabilitada')
   if (Object.values(s.rounds).some(r => ['pending', 'active'].includes(r.status))) throw new DomainError('Ya hay una ronda activa', 409)
@@ -26,9 +26,9 @@ export function startTrivia (s: State, actor: Actor, id: string, now: number, ra
   const question = options[Math.min(options.length - 1, Math.floor(random * options.length))]!
   question.used++
   s.rounds[id] = { id, questionId: question.id, expiresAt: 0, status: 'pending' }
-  message(s, `trivia:${id}`, question.text, now, 'trivia')
+  message(s, `trivia:${id}`, question.text, now, 'trivia', replyTo)
 }
-export function answerTrivia (s: State, actor: Actor, text: string, now: number) {
+export function answerTrivia (s: State, actor: Actor, text: string, now: number, replyTo?: string) {
   if (!s.settings.trivia.enabled) return
   const round = Object.values(s.rounds).find(r => r.status === 'active' && r.expiresAt > now)
   const q = round && s.questions[round.questionId]
@@ -37,7 +37,7 @@ export function answerTrivia (s: State, actor: Actor, text: string, now: number)
   if (!q.answers.some(a => normalized === a.trim().toLocaleLowerCase('es'))) return
   round.status = 'won'; round.winner = actor.id
   win(s, round.id, actor, 'trivia')
-  message(s, `winner:${round.id}`, `${actor.name} ganó una victoria de trivia.`, now, 'trivia')
+  message(s, `winner:${round.id}`, `${actor.name} ganó una victoria de trivia.`, now, 'trivia', replyTo)
 }
 export function triviaTick (s: State, now: number, random: number) {
   if (!s.settings.trivia.enabled) return
@@ -52,7 +52,7 @@ export function triviaTick (s: State, now: number, random: number) {
     message(s, `notice:${now}`, '¡Se viene una trivia!', now, 'trivia')
   }
 }
-export function playStory (s: State, actor: Actor, guest: Actor | undefined, id: string, now: number, random: number) {
+export function playStory (s: State, actor: Actor, guest: Actor | undefined, id: string, now: number, random: number, replyTo?: string) {
   if (!s.settings.stories.enabled) throw new DomainError('Historias deshabilitadas')
   if (s.stories[id]) return
   if (guest?.id === actor.id) throw new DomainError('Elegí otra persona como invitada')
@@ -67,22 +67,22 @@ export function playStory (s: State, actor: Actor, guest: Actor | undefined, id:
     : random < 0.75 ? users : []
   s.stories[id] = { id, users: users.map(u => u.id), family, winners: winners.map(u => u.id), at: now }
   for (const user of winners) win(s, id, user, 'stories')
-  message(s, `story:${id}`, `${users.map(u => u.name).join(' y ')}: ${family === 'piratas' ? 'zarparon en busca del tesoro' : `jugaron una ranked ficticia en ${['Hierro', 'Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Master', 'GrandMaster', 'Challenger'][Math.min(8, Math.floor(random * 9))]}`}. ${winners.length ? `${winners.map(u => u.name).join(' y ')}: +1 victoria.` : 'Esta aventura terminó sin victoria.'}`, now, 'stories')
+  message(s, `story:${id}`, `${users.map(u => u.name).join(' y ')}: ${family === 'piratas' ? 'zarparon en busca del tesoro' : `jugaron una ranked ficticia en ${['Hierro', 'Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Master', 'GrandMaster', 'Challenger'][Math.min(8, Math.floor(random * 9))]}`}. ${winners.length ? `${winners.map(u => u.name).join(' y ')}: +1 victoria.` : 'Esta aventura terminó sin victoria.'}`, now, 'stories', replyTo)
 }
 
-export const triviaCommand: import('./commands.js').Command = ({ state: s, actor, id, args, at, random }) => {
+export const triviaCommand: import('./commands.js').Command = ({ state: s, actor, id, args, at, random, replyTo }) => {
   requireAdmin(actor)
   const command = args.join(' ')
   if (command === 'saltear') {
     for (const r of Object.values(s.rounds)) if (['pending', 'active'].includes(r.status)) { r.status = 'skipped'; delete s.messages[`trivia:${r.id}`] }
     delete s.triviaNoticeAt
     s.nextTriviaAt = at + s.settings.trivia.intervalMinutes * 60_000
-  } else if (command === 'va') startTrivia(s, actor, id, at, random)
+  } else if (command === 'va') startTrivia(s, actor, id, at, random, replyTo)
   else throw new DomainError('Usá !pregunta va o !pregunta saltear')
 }
-export const storyCommand: import('./commands.js').Command = ({ state: s, actor, guest, id, at, random, args }) => {
+export const storyCommand: import('./commands.js').Command = ({ state: s, actor, guest, id, at, random, args, replyTo }) => {
   if (args.length && !guest) throw new DomainError('No se pudo identificar al invitado')
-  playStory(s, actor, guest, id, at, random)
+  playStory(s, actor, guest, id, at, random, replyTo)
 }
 
 // Response time starts at the acknowledged chat delivery, not at job creation.

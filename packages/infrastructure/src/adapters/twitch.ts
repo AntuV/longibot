@@ -109,7 +109,7 @@ export class Twitch {
     }
   }
 
-  async createClip (broadcasterId: string, title: string, requesterId: string) {
+  async createClip (broadcasterId: string, title: string | undefined, requesterId: string) {
     try {
       const access = await this.access('broadcaster', broadcasterId)
       if (requesterId !== broadcasterId) {
@@ -117,7 +117,14 @@ export class Twitch {
         const followers = z.object({ data: z.array(z.object({ user_id: z.string() })) }).parse(await this.helix(`channels/followers?${followersQuery}`, access.token))
         if (!followers.data.some(follower => follower.user_id === requesterId)) return undefined
       }
-      const query = new URLSearchParams({ broadcaster_id: broadcasterId, title })
+      if (!title) {
+        const streams = z.object({ data: z.array(z.object({ title: z.string() })) }).parse(await this.helix(`streams?user_id=${encodeURIComponent(broadcasterId)}`, access.token))
+        const stream = streams.data[0]
+        if (!stream) throw new DomainError('El canal tiene que estar en vivo para crear un clip.', 404)
+        title = stream.title
+      }
+      const query = new URLSearchParams({ broadcaster_id: broadcasterId })
+      if (title) query.set('title', title)
       const result = z.object({ data: z.tuple([z.object({ id: z.string().min(1) })]) }).parse(await this.helix(`clips?${query}`, access.token, 'POST'))
       return result.data[0].id
     } catch (error) {

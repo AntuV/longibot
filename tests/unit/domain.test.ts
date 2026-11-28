@@ -224,7 +224,7 @@ describe('feature composition and commands', () => {
     chat(s, mod, 'cancel', '!recordar quitar 3', now); expect(s.reminders['3']?.status).toBe('canceled')
     chat(s, viewer, 'deny', '!recordar no', now); expect(s.messages['error:deny']?.text).toContain('moderador')
     expect(s.messages['0']?.text).toContain('!lol')
-    expect(s.messages['0']?.text).toContain('!clip <título> (seguidores)')
+    expect(s.messages['0']?.text).toContain('!clip [título] (seguidores)')
     expect(s.messages['0']?.text).not.toMatch(/!victorias|!config|!historia|!pregunta/)
     expect(s.messages['1']?.text).toBe(s.messages['0']?.text)
     for (const id of ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14']) {
