@@ -16,7 +16,16 @@ const helpCommand: Command = ({ state, id, at }) => {
   message(state, id, usage.join(' · '), at)
 }
 export const features: Feature[] = [
-  { name: 'reminders', events: all, handle: remindersEvent, commands: { '!recordar': reminderCommand } },
+  {
+    name: 'reminders',
+    events: all,
+    handle: remindersEvent,
+    commands: {
+      '!recordar': reminderCommand,
+      '!recordatorio': reminderCommand,
+      '!remind': reminderCommand
+    }
+  },
   { name: 'predictions', events: ['game.started.v1', 'prediction.state.changed.v1'], handle: predictionsEvent },
   { name: 'trivia', events: [], handle: () => {}, enabled: s => s.settings.trivia.enabled, commands: { '!pregunta': triviaCommand } },
   { name: 'stories', events: [], handle: () => {}, enabled: s => s.settings.stories.enabled, commands: { '!historia': storyCommand } },
