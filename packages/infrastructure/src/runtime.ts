@@ -205,12 +205,16 @@ export class Runtime {
       return true
     })
     if (!claimed) return
-    let clipId: string
+    let clipId: string | undefined
     try {
-      clipId = await this.twitch.createClip(this.broadcasterId, clip.title)
+      clipId = await this.twitch.createClip(this.broadcasterId, clip.title, task.actor.id)
     } catch (error) {
       await finish(error instanceof DomainError ? error.message : unconfirmed)
       await this.error('clips', error, now)
+      return
+    }
+    if (clipId === undefined) {
+      await finish('Para usar !clip tenés que seguir el canal.')
       return
     }
     await this.store.change(s => { s.chatTasks[task.id]!.clip!.submitted = { at: now, clipId } })

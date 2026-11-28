@@ -109,10 +109,15 @@ export class Twitch {
     }
   }
 
-  async createClip (broadcasterId: string, title: string) {
-    const query = new URLSearchParams({ broadcaster_id: broadcasterId, title })
+  async createClip (broadcasterId: string, title: string, requesterId: string) {
     try {
       const access = await this.access('broadcaster', broadcasterId)
+      if (requesterId !== broadcasterId) {
+        const followersQuery = new URLSearchParams({ broadcaster_id: broadcasterId, user_id: requesterId })
+        const followers = z.object({ data: z.array(z.object({ user_id: z.string() })) }).parse(await this.helix(`channels/followers?${followersQuery}`, access.token))
+        if (!followers.data.some(follower => follower.user_id === requesterId)) return undefined
+      }
+      const query = new URLSearchParams({ broadcaster_id: broadcasterId, title })
       const result = z.object({ data: z.tuple([z.object({ id: z.string().min(1) })]) }).parse(await this.helix(`clips?${query}`, access.token, 'POST'))
       return result.data[0].id
     } catch (error) {

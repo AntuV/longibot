@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { DomainError, message, requireAdmin } from './model.js'
+import { DomainError, message } from './model.js'
 import type { State, DomainEvent, Actor } from './model.js'
 import { reminderCommand, remindersEvent } from './reminders.js'
 import { predictionsEvent } from './predictions.js'
@@ -10,7 +10,7 @@ export interface Feature { name: string, events: string[], handle: (s: State, e:
 const all = ['*']
 const helpCommand: Command = ({ state, id, at }) => {
   const available = registeredCommands(state)
-  const usage = ['!lol <campeón>', '!recordar <texto|lista|quitar id> (mods)', '!clip <título> (mods)']
+  const usage = ['!lol <campeón>', '!recordar <texto|lista|quitar id> (mods)', '!clip <título> (seguidores)']
   if (available.includes('!pregunta')) usage.push('!pregunta <va|saltear> (mods)')
   if (available.includes('!historia')) usage.push('!historia [@usuario]')
   message(state, id, usage.join(' · '), at)
@@ -38,7 +38,6 @@ export const features: Feature[] = [
       '!comandos': helpCommand,
       '!lol': ({ state: s, id, at }) => message(s, id, 'Usá !lol <campeón>.', at),
       '!clip': ({ state, actor, id, text, at, replyTo }) => {
-        requireAdmin(actor)
         const title = text.slice('!clip'.length).trim()
         if (!title) throw new DomainError('Usá !clip <título>.')
         state.chatTasks[id] ??= { id, actor, text, at, clip: { title, replyTo } }

@@ -110,7 +110,7 @@ describe('Twitch HTTP adapter', () => {
     const twitch = new Twitch({} as Store, config, new Http(f))
     const access = vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'channel-token', userId: 'b' })
     const title = '¡Qué jugada! & GG'
-    await expect(twitch.createClip('b', title)).resolves.toBe('clip-id')
+    await expect(twitch.createClip('b', title, 'b')).resolves.toBe('clip-id')
     expect(access).toHaveBeenCalledWith('broadcaster', 'b')
     const [requestUrl, init] = f.mock.calls[0]!
     const endpoint = new URL(String(requestUrl))
@@ -119,8 +119,28 @@ describe('Twitch HTTP adapter', () => {
     expect(init).toMatchObject({ method: 'POST', headers: { Authorization: 'Bearer channel-token' } })
     await expect(twitch.clipUrl('clip-id')).resolves.toBe(url)
     expect(f).toHaveBeenLastCalledWith('https://api.twitch.tv/helix/clips?id=clip-id', expect.objectContaining({ method: 'GET', headers: expect.objectContaining({ Authorization: 'Bearer app' }) }))
-    await expect(twitch.createClip('b', title)).rejects.toThrow('Reconectá la cuenta del canal')
-    await expect(twitch.createClip('b', title)).rejects.toThrow('en vivo')
+    await expect(twitch.createClip('b', title, 'b')).rejects.toThrow('Reconectá la cuenta del canal')
+    await expect(twitch.createClip('b', title, 'b')).rejects.toThrow('en vivo')
+  })
+
+  it('checks the requester follows the channel before creating a clip', async () => {
+    const f = fetcher()
+      .mockResolvedValueOnce(json({ total: 0, data: [] }))
+      .mockResolvedValueOnce(json({ total: 1, data: [{ user_id: 'viewer', followed_at: new Date().toISOString() }] }))
+      .mockResolvedValueOnce(json({ data: [{ id: 'clip-id' }] }, 202))
+      .mockResolvedValueOnce(json({}, 401))
+    const twitch = new Twitch({} as Store, config, new Http(f))
+    vi.spyOn(twitch, 'access').mockResolvedValue({ token: 'channel-token', userId: 'b' })
+    const title = 'Una jugada'
+    await expect(twitch.createClip('b', title, 'outsider')).resolves.toBeUndefined()
+    expect(f).toHaveBeenCalledExactlyOnceWith(
+      'https://api.twitch.tv/helix/channels/followers?broadcaster_id=b&user_id=outsider',
+      expect.objectContaining({ method: 'GET', headers: expect.objectContaining({ Authorization: 'Bearer channel-token' }) })
+    )
+    await expect(twitch.createClip('b', title, 'viewer')).resolves.toBe('clip-id')
+    expect(f).toHaveBeenLastCalledWith('https://api.twitch.tv/helix/clips?broadcaster_id=b&title=Una+jugada', expect.objectContaining({ method: 'POST' }))
+    await expect(twitch.createClip('b', title, 'viewer')).rejects.toThrow('Reconectá la cuenta del canal')
+    expect(f.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
   })
 
   it('posts an orange announcement as the bot and falls back only on permission rejection', async () => {

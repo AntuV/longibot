@@ -63,7 +63,7 @@ El agregado funcional de cada canal se guarda en `channel_state.data` como un do
 
 `!ayuda`, `!comandos` y `!lol <campeón>`. Los moderadores, el streamer y el propietario configurado pueden usar `!recordar <texto>`, `!recordar lista` y `!recordar quitar <id>`. Cuando se habilitan los módulos correspondientes, también están disponibles `!pregunta va` y `!pregunta saltear` para esos roles, y `!historia [@usuario]` para todo el chat. `!ayuda` y `!comandos` muestran los juegos habilitados. El bot ignora los comandos de juegos deshabilitados. La configuración se administra en el panel.
 
-`!clip <título>` crea un clip del directo con la duración predeterminada de Twitch (30 segundos) y responde con el enlace público. Pueden usarlo los moderadores, el streamer y el propietario configurado. Ejemplo de uso en el chat `!clip La remontada imposible`. Si la cuenta del canal ya estaba conectada, el streamer debe reconectarla desde el panel para conceder el permiso `clips:edit`.
+`!clip <título>` crea un clip del directo con la duración predeterminada de Twitch (30 segundos) y responde con el enlace público. Pueden usarlo el streamer y cualquier persona que siga el canal, desde el momento en que empieza a seguirlo. Ejemplo de uso en el chat `!clip La remontada imposible`. Si la cuenta del canal ya estaba conectada, el streamer debe reconectarla desde el panel para conceder el permiso `clips:edit`.
 
 ## Migración y operación
 

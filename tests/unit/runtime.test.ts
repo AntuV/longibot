@@ -51,20 +51,22 @@ describe('!clip', () => {
     data: { userId: actor.id, userName: actor.name, admin, text, chatMessageId: `chat-${id}` }
   }])
 
-  it('requires a title and moderator permissions', async () => {
-    await command('viewer', '!clip Una jugada', false)
+  it('requires a title and replies when Twitch says the requester does not follow the channel', async () => {
+    twitch.createClip.mockResolvedValueOnce(undefined)
+    await command('non-follower', '!clip Una jugada')
     await command('empty', '!clip   ')
     await runtime.chatTasks(now)
-    expect(store.state.messages['error:viewer']?.text).toContain('moderador')
+    expect(store.state.messages['non-follower']).toMatchObject({ text: 'Para usar !clip tenés que seguir el canal.', replyTo: 'chat-non-follower' })
     expect(store.state.messages['error:empty']?.text).toBe('Usá !clip <título>.')
-    expect(twitch.createClip).not.toHaveBeenCalled()
+    expect(twitch.createClip).toHaveBeenCalledExactlyOnceWith('b', 'Una jugada', actor.id)
+    expect(store.state.chatTasks).toEqual({})
   })
 
   it('preserves the title and posts only the confirmed public URL as a reply', async () => {
     const url = 'https://clips.twitch.tv/example'
-    await command('clip', '!CLIP  ¡Qué  jugada! & GG  ')
+    await command('clip', '!CLIP  ¡Qué  jugada! & GG  ', false)
     await runtime.tick(now)
-    expect(twitch.createClip).toHaveBeenCalledExactlyOnceWith('b', '¡Qué  jugada! & GG')
+    expect(twitch.createClip).toHaveBeenCalledExactlyOnceWith('b', '¡Qué  jugada! & GG', actor.id)
     await runtime.tick(now + 2000)
     expect(twitch.clipUrl).toHaveBeenCalledWith('example')
     expect(twitch.send).not.toHaveBeenCalled()
